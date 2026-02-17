@@ -29,13 +29,13 @@ ApplicationMenu.setApplicationMenu([
   },
 ]);
 
-// main window options (small "pet" window)
+// main window options
 const mainWindow = new BrowserWindow({
   title: APP_NAME,
   url,
   frame: {
-    width: 360,
-    height: 360,
+    width: 420,
+    height: 460,
     x: 200,
     y: 200,
   },

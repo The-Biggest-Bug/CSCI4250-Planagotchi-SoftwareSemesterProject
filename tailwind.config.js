@@ -2,7 +2,11 @@
 export default {
 	content: ["./src/mainview/**/*.{html,js,ts,jsx,tsx}"],
 	theme: {
-		extend: {},
+		extend: {
+			fontFamily: {
+				fredoka: ['Fredoka', 'sans-serif'],
+			},
+		},
 	},
 	plugins: [],
 };
