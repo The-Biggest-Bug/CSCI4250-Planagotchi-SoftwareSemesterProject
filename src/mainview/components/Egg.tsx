@@ -14,7 +14,7 @@ export default function Egg({ children }: EggProps) {
         className="absolute inset-0 w-full h-full pointer-events-none object-contain"
       />
 
-      <h1 className="absolute bottom-9 left-0 right-0 text-center font-fredoka font-bold text-2xl text-white select-none pointer-events-none z-20">
+      <h1 className="absolute bottom-12 left-0 right-0 text-center font-fredoka font-bold text-2xl text-card select-none pointer-events-none z-20">
         planagotchi
       </h1>
 

@@ -24,7 +24,7 @@ export default function PetDisplay({}: PetDisplayProps) {
             <TodoList />
           </div>
         ) : (
-          <div className="w-4/5 flex flex-col items-center justify-center gap-3">
+          <div className="w-3/5 flex flex-col items-center justify-center gap-3">
             <div className="flex justify-center gap-1">
               {Array.from({ length: 5 }).map((_, idx) => (
                 <HeartIcon
