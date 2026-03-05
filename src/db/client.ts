@@ -32,6 +32,19 @@ try {
   // column already exists
 }
 
+sqlite.run(`
+  CREATE TABLE IF NOT EXISTS app_settings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    egg_color TEXT NOT NULL DEFAULT '#CAF0FE'
+  );
+`);
+
+sqlite.run(`
+  INSERT INTO app_settings (id, egg_color)
+  SELECT 1, '#CAF0FE'
+  WHERE NOT EXISTS (SELECT 1 FROM app_settings WHERE id = 1);
+`);
+
 export const db = drizzle(sqlite, { schema });
 export type Db = typeof db;
 

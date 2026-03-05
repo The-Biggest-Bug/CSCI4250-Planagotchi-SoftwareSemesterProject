@@ -11,3 +11,8 @@ export const todos = sqliteTable("todos", {
   dueAt: integer("due_at", { mode: "timestamp_ms" }),
 });
 
+export const appSettings = sqliteTable("app_settings", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  eggColor: text("egg_color").notNull().default("#CAF0FE"),
+});
+

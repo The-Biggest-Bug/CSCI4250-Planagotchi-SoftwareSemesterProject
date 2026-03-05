@@ -14,7 +14,7 @@ interface LayoutProps {
 export default function Layout({
   children,
   buttons,
-  eggFillColor = "#fff000",
+  eggFillColor = "#CAF0FE",
 }: LayoutProps) {
   return (
     <div className="relative w-full h-full flex flex-col electrobun-webkit-app-region-drag">

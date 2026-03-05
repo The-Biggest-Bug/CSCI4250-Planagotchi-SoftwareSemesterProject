@@ -1,11 +1,42 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import HomePage from "@/mainview/pages/home-page";
 import TasksPage from "@/mainview/pages/tasks-page";
 import SettingsPage from "@/mainview/pages/settings-page";
+import { electroview } from "@/shared/electrobun";
 
 export default function App() {
   const [page, setPage] = useState("home");
-  const [eggFillColor, setEggFillColor] = useState("#fff000");
+  const [eggFillColor, setEggFillColor] = useState("#CAF0FE");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadEggColor = async () => {
+      try {
+        const result = await electroview.rpc!.request.getEggColor({});
+        if (!cancelled && result?.color) {
+          setEggFillColor(result.color);
+        }
+      } catch {
+        // fall back to default color on error
+      }
+    };
+
+    loadEggColor();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleEggColorChange = async (color: string) => {
+    setEggFillColor(color);
+    try {
+      await electroview.rpc!.request.setEggColor({ color });
+    } catch {
+      // ignore persistence errors; UI will still reflect local change
+    }
+  };
 
   const pages = [
     {
@@ -22,7 +53,7 @@ export default function App() {
         <SettingsPage
           navigate={setPage}
           eggFillColor={eggFillColor}
-          onEggColorChange={setEggFillColor}
+          onEggColorChange={handleEggColorChange}
         />
       ),
     },

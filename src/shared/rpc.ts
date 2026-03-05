@@ -32,6 +32,14 @@ export type MainViewRPC = {
         params: { id: number };
         response: { success: boolean };
       };
+      getEggColor: {
+        params: {};
+        response: { color: string };
+      };
+      setEggColor: {
+        params: { color: string };
+        response: { color: string };
+      };
     };
     messages: {};
   }>;

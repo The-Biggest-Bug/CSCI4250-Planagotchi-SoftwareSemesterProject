@@ -8,7 +8,7 @@ import {
 import { desc, eq } from "drizzle-orm";
 import config from "../../electrobun.config";
 import { db } from "../db/client";
-import { todos } from "../db/schema";
+import { todos, appSettings } from "../db/schema";
 import type { MainViewRPC, TodoDTO } from "../shared/rpc";
 
 const APP_NAME = config.app.name;
@@ -95,6 +95,33 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
       deleteTodo: async ({ id }) => {
         await db.delete(todos).where(eq(todos.id, id));
         return { success: true };
+      },
+      getEggColor: async () => {
+        const [existing] = await db.select().from(appSettings).limit(1);
+        if (existing) {
+          return { color: existing.eggColor };
+        }
+        const [inserted] = await db
+          .insert(appSettings)
+          .values({ eggColor: "#CAF0FE" })
+          .returning();
+        return { color: inserted.eggColor };
+      },
+      setEggColor: async ({ color }) => {
+        const [existing] = await db.select().from(appSettings).limit(1);
+        if (existing) {
+          const [updated] = await db
+            .update(appSettings)
+            .set({ eggColor: color })
+            .where(eq(appSettings.id, existing.id))
+            .returning();
+          return { color: updated.eggColor };
+        }
+        const [inserted] = await db
+          .insert(appSettings)
+          .values({ eggColor: color })
+          .returning();
+        return { color: inserted.eggColor };
       },
     },
     messages: {},
