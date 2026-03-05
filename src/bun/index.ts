@@ -32,6 +32,17 @@ async function getMainViewUrl(): Promise<string> {
 
 const url = await getMainViewUrl();
 
+function mapTodo(row: typeof todos.$inferSelect): TodoDTO {
+  return {
+    id: row.id!,
+    title: row.title,
+    description: row.description ?? null,
+    completed: !!row.completed,
+    createdAt: new Date(row.createdAt).toISOString(),
+    dueAt: row.dueAt ? new Date(row.dueAt).toISOString() : null,
+  };
+}
+
 const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
   handlers: {
     requests: {
@@ -40,23 +51,31 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
           .select()
           .from(todos)
           .orderBy(desc(todos.createdAt));
-
-        return rows.map<TodoDTO>((row) => ({
-          id: row.id!,
-          title: row.title,
-          completed: !!row.completed,
-          createdAt: new Date(row.createdAt).toISOString(),
-        }));
+        return rows.map(mapTodo);
       },
-      addTodo: async ({ title }) => {
-        const [inserted] = await db.insert(todos).values({ title }).returning();
+      addTodo: async ({ title, description, dueAt }) => {
+        const [inserted] = await db
+          .insert(todos)
+          .values({
+            title,
+            description: description || null,
+            dueAt: dueAt ? new Date(dueAt) : null,
+          })
+          .returning();
+        return mapTodo(inserted);
+      },
+      updateTodo: async ({ id, title, description, dueAt }) => {
+        const set: Partial<typeof todos.$inferInsert> = {};
+        if (title !== undefined) set.title = title;
+        if (description !== undefined) set.description = description || null;
+        if (dueAt !== undefined) set.dueAt = dueAt ? new Date(dueAt) : null;
 
-        return {
-          id: inserted.id!,
-          title: inserted.title,
-          completed: !!inserted.completed,
-          createdAt: new Date(inserted.createdAt).toISOString(),
-        } satisfies TodoDTO;
+        const [updated] = await db
+          .update(todos)
+          .set(set)
+          .where(eq(todos.id, id))
+          .returning();
+        return updated ? mapTodo(updated) : null;
       },
       toggleTodo: async ({ id }) => {
         const [existing] = await db
@@ -64,7 +83,6 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
           .from(todos)
           .where(eq(todos.id, id))
           .limit(1);
-
         if (!existing) return null;
 
         const [updated] = await db
@@ -72,13 +90,7 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
           .set({ completed: !existing.completed })
           .where(eq(todos.id, id))
           .returning();
-
-        return {
-          id: updated.id!,
-          title: updated.title,
-          completed: !!updated.completed,
-          createdAt: new Date(updated.createdAt).toISOString(),
-        } satisfies TodoDTO;
+        return mapTodo(updated);
       },
       deleteTodo: async ({ id }) => {
         await db.delete(todos).where(eq(todos.id, id));

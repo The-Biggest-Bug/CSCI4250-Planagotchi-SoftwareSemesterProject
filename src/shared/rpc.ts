@@ -3,8 +3,10 @@ export type RPCSchema<T> = T;
 export interface TodoDTO {
   id: number;
   title: string;
+  description: string | null;
   completed: boolean;
   createdAt: string;
+  dueAt: string | null;
 }
 
 export type MainViewRPC = {
@@ -15,8 +17,12 @@ export type MainViewRPC = {
         response: TodoDTO[];
       };
       addTodo: {
-        params: { title: string };
+        params: { title: string; description?: string; dueAt?: string };
         response: TodoDTO;
+      };
+      updateTodo: {
+        params: { id: number; title?: string; description?: string | null; dueAt?: string | null };
+        response: TodoDTO | null;
       };
       toggleTodo: {
         params: { id: number };

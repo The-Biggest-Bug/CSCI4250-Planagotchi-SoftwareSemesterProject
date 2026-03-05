@@ -14,9 +14,23 @@ sqlite.run(`
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     title TEXT NOT NULL,
     completed INTEGER NOT NULL DEFAULT 0,
-    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000)
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    description TEXT,
+    due_at INTEGER
   );
 `);
+
+try {
+  sqlite.run(`ALTER TABLE todos ADD COLUMN due_at INTEGER`);
+} catch {
+  // column already exists
+}
+
+try {
+  sqlite.run(`ALTER TABLE todos ADD COLUMN description TEXT`);
+} catch {
+  // column already exists
+}
 
 export const db = drizzle(sqlite, { schema });
 export type Db = typeof db;

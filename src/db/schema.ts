@@ -7,5 +7,7 @@ export const todos = sqliteTable("todos", {
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),
+  description: text("description"),
+  dueAt: integer("due_at", { mode: "timestamp_ms" }),
 });
 
