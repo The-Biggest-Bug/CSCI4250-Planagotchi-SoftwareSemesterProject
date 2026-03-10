@@ -39,6 +39,7 @@ export default function TasksPage({ navigate, eggFillColor }: TasksPageProps) {
   const handleCreated = (todo: TodoDTO) => {
     setTodos((prev) => [todo, ...prev]);
     setShowCreate(false);
+    setEditMode(false);
   };
 
   const handleUpdated = (updated: TodoDTO) => {
