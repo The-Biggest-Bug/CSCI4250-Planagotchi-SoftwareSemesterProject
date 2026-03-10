@@ -20,7 +20,7 @@ export default function Layout({
   eggFillColor = "#CAF0FE",
 }: LayoutProps) {
   const buttonShellClass =
-    "rounded-[50%] bg-[#2a2e3a] border border-black/30 text-white/70 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] hover:brightness-125 hover:bg-[#2a2e3a] focus-visible:ring-white/30 electrobun-webkit-app-region-no-drag";
+    "rounded-[50%] bg-card border border-border/60 text-foreground/70 shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] hover:brightness-110 hover:bg-card focus-visible:ring-white/30 electrobun-webkit-app-region-no-drag";
 
   const handleClose = () => {
     void electroview.rpc?.request.closeApp({});
@@ -68,7 +68,7 @@ export default function Layout({
                   className={`h-9 w-16 ${buttonShellClass} ${isOuter ? "translate-y-1" : "-translate-y-0.5"}`}
                   onClick={btn.onClick}
                 >
-                  <btn.icon className="w-4 h-4 text-white/70" />
+                  <btn.icon className="w-4 h-4 text-foreground/70" />
                 </Button>
               );
             })}
@@ -81,7 +81,7 @@ export default function Layout({
             className={`h-9 w-16 ${buttonShellClass}`}
             onClick={handleClose}
           >
-            <PowerIcon className="h-4 w-4 text-white/70" />
+            <PowerIcon className="h-4 w-4 text-foreground/70" />
           </Button>
         </div>
       </div>
