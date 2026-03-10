@@ -37,7 +37,9 @@ export default function EditTaskModal({
 
     setSubmitting(true);
     try {
-      const dueAt = date ? new Date(`${date}T${time || "00:00"}`).toISOString() : null;
+      const dueAt = date
+        ? new Date(`${date}T${time || "00:00"}`).toISOString()
+        : null;
 
       const updated = await electroview.rpc!.request.updateTodo({
         id: todo.id,
@@ -65,7 +67,10 @@ export default function EditTaskModal({
     <div className="absolute inset-0 z-20 bg-card/95 flex flex-col p-2.5 gap-1.5">
       <div className="text-sm font-semibold">Edit Task</div>
 
-      <form onSubmit={handleSave} className="flex flex-col gap-1.5 flex-1 min-h-0">
+      <form
+        onSubmit={handleSave}
+        className="flex flex-col gap-1.5 flex-1 min-h-0"
+      >
         <input
           autoFocus
           type="text"

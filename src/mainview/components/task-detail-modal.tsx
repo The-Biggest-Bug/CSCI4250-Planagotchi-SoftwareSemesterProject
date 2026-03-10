@@ -20,7 +20,11 @@ function formatDue(dueAt: string | null) {
   return `${month} ${day}, ${h12}:${mins}${period}`;
 }
 
-export default function TaskDetailModal({ todo, onToggle, onClose }: TaskDetailModalProps) {
+export default function TaskDetailModal({
+  todo,
+  onToggle,
+  onClose,
+}: TaskDetailModalProps) {
   return (
     <div className="absolute inset-0 z-20 bg-card flex flex-col p-2.5 gap-1.5">
       <div className="text-sm font-semibold truncate">{todo.title}</div>
@@ -41,7 +45,9 @@ export default function TaskDetailModal({ todo, onToggle, onClose }: TaskDetailM
       <div className="flex-1 overflow-y-auto px-1 min-h-0">
         <div className="text-sm whitespace-pre-wrap">
           {todo.description || (
-            <span className="text-muted-foreground italic text-xs">No description</span>
+            <span className="text-muted-foreground italic text-xs">
+              No description
+            </span>
           )}
         </div>
       </div>
@@ -58,4 +64,3 @@ export default function TaskDetailModal({ todo, onToggle, onClose }: TaskDetailM
     </div>
   );
 }
-
