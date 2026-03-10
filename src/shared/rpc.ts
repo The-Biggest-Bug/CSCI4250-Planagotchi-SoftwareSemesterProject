@@ -40,6 +40,10 @@ export type MainViewRPC = {
         params: { color: string };
         response: { color: string };
       };
+      closeApp: {
+        params: {};
+        response: { success: boolean };
+      };
     };
     messages: {};
   }>;
