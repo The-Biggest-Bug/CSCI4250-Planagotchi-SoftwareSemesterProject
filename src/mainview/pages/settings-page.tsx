@@ -1,5 +1,9 @@
 import Layout from "@/mainview/layout";
-import { ListBulletIcon, HomeIcon, Cog6ToothIcon } from "@heroicons/react/24/solid";
+import {
+  ListBulletIcon,
+  HomeIcon,
+  Cog6ToothIcon,
+} from "@heroicons/react/24/solid";
 import type { ButtonConfig, Navigate } from "@/mainview/types";
 
 interface SettingsPageProps {

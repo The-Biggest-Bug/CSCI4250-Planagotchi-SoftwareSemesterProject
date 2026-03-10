@@ -47,4 +47,3 @@ sqlite.run(`
 
 export const db = drizzle(sqlite, { schema });
 export type Db = typeof db;
-

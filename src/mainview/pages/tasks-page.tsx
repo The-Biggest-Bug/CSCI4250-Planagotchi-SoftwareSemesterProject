@@ -72,7 +72,11 @@ export default function TasksPage({ navigate, eggFillColor }: TasksPageProps) {
 
   const buttons: ButtonConfig[] = [
     { icon: HomeIcon, onClick: () => navigate("home"), ariaLabel: "home" },
-    { icon: PlusIcon, onClick: () => setShowCreate(true), ariaLabel: "create-task" },
+    {
+      icon: PlusIcon,
+      onClick: () => setShowCreate(true),
+      ariaLabel: "create-task",
+    },
     {
       icon: PencilIcon,
       onClick: () => setEditMode((v) => !v),
@@ -100,7 +104,10 @@ export default function TasksPage({ navigate, eggFillColor }: TasksPageProps) {
         )}
 
         {showCreate && (
-          <CreateTaskModal onCreated={handleCreated} onClose={() => setShowCreate(false)} />
+          <CreateTaskModal
+            onCreated={handleCreated}
+            onClose={() => setShowCreate(false)}
+          />
         )}
 
         {editingTodo && (
@@ -115,4 +122,3 @@ export default function TasksPage({ navigate, eggFillColor }: TasksPageProps) {
     </Layout>
   );
 }
-

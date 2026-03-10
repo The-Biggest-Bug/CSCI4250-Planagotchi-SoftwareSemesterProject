@@ -9,4 +9,3 @@ export const rpc = Electroview.defineRPC<MainViewRPC>({
 });
 
 export const electroview = new Electroview({ rpc });
-

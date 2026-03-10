@@ -15,4 +15,3 @@ export const appSettings = sqliteTable("app_settings", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   eggColor: text("egg_color").notNull().default("#CAF0FE"),
 });
-

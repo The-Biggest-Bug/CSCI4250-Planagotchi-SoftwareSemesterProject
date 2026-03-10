@@ -21,7 +21,12 @@ export type MainViewRPC = {
         response: TodoDTO;
       };
       updateTodo: {
-        params: { id: number; title?: string; description?: string | null; dueAt?: string | null };
+        params: {
+          id: number;
+          title?: string;
+          description?: string | null;
+          dueAt?: string | null;
+        };
         response: TodoDTO | null;
       };
       toggleTodo: {

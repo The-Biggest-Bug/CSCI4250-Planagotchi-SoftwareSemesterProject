@@ -7,7 +7,10 @@ interface CreateTaskModalProps {
   onClose: () => void;
 }
 
-export default function CreateTaskModal({ onCreated, onClose }: CreateTaskModalProps) {
+export default function CreateTaskModal({
+  onCreated,
+  onClose,
+}: CreateTaskModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(() => {
@@ -27,7 +30,9 @@ export default function CreateTaskModal({ onCreated, onClose }: CreateTaskModalP
 
     setSubmitting(true);
     try {
-      const dueAt = date ? new Date(`${date}T${time || "00:00"}`).toISOString() : undefined;
+      const dueAt = date
+        ? new Date(`${date}T${time || "00:00"}`).toISOString()
+        : undefined;
 
       const todo = await electroview.rpc!.request.addTodo({
         title: trimmed,
@@ -44,7 +49,10 @@ export default function CreateTaskModal({ onCreated, onClose }: CreateTaskModalP
     <div className="absolute inset-0 z-20 bg-card/95 flex flex-col p-2.5 gap-1.5">
       <div className="text-sm font-semibold">New Task</div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-1.5 flex-1 min-h-0">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-1.5 flex-1 min-h-0"
+      >
         <input
           autoFocus
           type="text"
@@ -99,4 +107,3 @@ export default function CreateTaskModal({ onCreated, onClose }: CreateTaskModalP
     </div>
   );
 }
-
