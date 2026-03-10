@@ -123,6 +123,10 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
           .returning();
         return { color: inserted.eggColor };
       },
+      closeApp: async () => {
+        mainWindow.close();
+        return { success: true };
+      },
     },
     messages: {},
   },
