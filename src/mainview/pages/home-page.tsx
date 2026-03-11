@@ -1,8 +1,8 @@
 import {
+  CalendarDaysIcon,
   ListBulletIcon,
   Cog6ToothIcon,
   HeartIcon,
-  HomeIcon,
 } from "@heroicons/react/24/solid";
 import Layout from "@/mainview/layout";
 import type { ButtonConfig, Navigate } from "@/mainview/types";
@@ -14,7 +14,11 @@ interface HomePageProps {
 
 export default function HomePage({ navigate, eggFillColor }: HomePageProps) {
   const buttons: ButtonConfig[] = [
-    { icon: HomeIcon, onClick: () => {}, ariaLabel: "home" },
+    {
+      icon: CalendarDaysIcon,
+      onClick: () => navigate("calendar"),
+      ariaLabel: "calendar",
+    },
     {
       icon: ListBulletIcon,
       onClick: () => navigate("tasks"),

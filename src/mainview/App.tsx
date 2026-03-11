@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import HomePage from "@/mainview/pages/home-page";
 import TasksPage from "@/mainview/pages/tasks-page";
+import CalendarPage from "@/mainview/pages/calendar-page";
 import SettingsPage from "@/mainview/pages/settings-page";
+import type { PageName } from "@/mainview/types";
 import { electroview } from "@/shared/electrobun";
 
 export default function App() {
-  const [page, setPage] = useState("home");
+  const [page, setPage] = useState<PageName>("home");
   const [eggFillColor, setEggFillColor] = useState("#CAF0FE");
 
   useEffect(() => {
@@ -46,6 +48,12 @@ export default function App() {
     {
       name: "tasks",
       component: <TasksPage navigate={setPage} eggFillColor={eggFillColor} />,
+    },
+    {
+      name: "calendar",
+      component: (
+        <CalendarPage navigate={setPage} eggFillColor={eggFillColor} />
+      ),
     },
     {
       name: "settings",

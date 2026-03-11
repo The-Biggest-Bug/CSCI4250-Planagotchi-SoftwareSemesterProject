@@ -1,13 +1,13 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import { PlusIcon, PencilIcon, HomeIcon } from "@heroicons/react/24/solid";
 import Layout from "@/mainview/layout";
 import TodoList from "@/mainview/components/todo-list";
 import TaskDetailModal from "@/mainview/components/task-detail-modal";
 import CreateTaskModal from "@/mainview/components/create-task-modal";
 import EditTaskModal from "@/mainview/components/edit-task-modal";
+import useTodos from "@/mainview/hooks/use-todos";
 import type { ButtonConfig, Navigate } from "@/mainview/types";
 import type { TodoDTO } from "@/shared/rpc";
-import { electroview } from "@/shared/electrobun";
 
 interface TasksPageProps {
   navigate: Navigate;
@@ -15,49 +15,34 @@ interface TasksPageProps {
 }
 
 export default function TasksPage({ navigate, eggFillColor }: TasksPageProps) {
-  const [todos, setTodos] = useState<TodoDTO[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { todos, loading, addTodo, updateTodo, deleteTodo, toggleTodo } =
+    useTodos();
   const [showCreate, setShowCreate] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editingTodo, setEditingTodo] = useState<TodoDTO | null>(null);
   const [viewingTodo, setViewingTodo] = useState<TodoDTO | null>(null);
 
-  const fetchTodos = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await electroview.rpc!.request.listTodos({});
-      setTodos(result);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchTodos();
-  }, [fetchTodos]);
-
   const handleCreated = (todo: TodoDTO) => {
-    setTodos((prev) => [todo, ...prev]);
+    addTodo(todo);
     setShowCreate(false);
     setEditMode(false);
   };
 
   const handleUpdated = (updated: TodoDTO) => {
-    setTodos((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    updateTodo(updated);
     setEditingTodo(null);
     setEditMode(false);
   };
 
   const handleDeleted = (id: number) => {
-    setTodos((prev) => prev.filter((t) => t.id !== id));
+    deleteTodo(id);
     setEditingTodo(null);
     setEditMode(false);
   };
 
   const handleToggle = async (id: number) => {
-    const updated = await electroview.rpc!.request.toggleTodo({ id });
+    const updated = await toggleTodo(id);
     if (updated) {
-      setTodos((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
       setViewingTodo((prev) => (prev?.id === updated.id ? updated : prev));
     }
   };
