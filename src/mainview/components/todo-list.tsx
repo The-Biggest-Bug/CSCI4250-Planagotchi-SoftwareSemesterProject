@@ -6,6 +6,8 @@ interface TodoListProps {
   todos: TodoDTO[];
   loading: boolean;
   editMode: boolean;
+  title?: string;
+  emptyMessage?: string;
   onToggle: (id: number) => void;
   onSelect: (todo: TodoDTO) => void;
 }
@@ -27,13 +29,15 @@ export default function TodoList({
   todos,
   loading,
   editMode,
+  title = "Tasks",
+  emptyMessage = "No tasks yet.",
   onToggle,
   onSelect,
 }: TodoListProps) {
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
       <div className="px-2 pt-2 pb-1">
-        <div className="text-sm font-medium">Tasks</div>
+        <div className="text-sm font-medium">{title}</div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-1 space-y-0.5">
@@ -44,7 +48,7 @@ export default function TodoList({
         )}
         {!loading && todos.length === 0 && (
           <div className="text-sm text-muted-foreground px-1 py-2">
-            No tasks yet.
+            {emptyMessage}
           </div>
         )}
         {todos.map((todo) => (
