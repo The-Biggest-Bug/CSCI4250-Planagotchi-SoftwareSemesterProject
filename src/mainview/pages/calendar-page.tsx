@@ -206,8 +206,6 @@ export default function CalendarPage({
     [focusDate, scheduledTodos],
   );
 
-  const selectedDayTasks = todosByDay.get(getDateKey(selectedDate)) ?? [];
-
   const dayPanelTodos = useMemo(() => {
     if (!panelDate) return [];
     return todosByDay.get(getDateKey(panelDate)) ?? [];
@@ -464,14 +462,6 @@ export default function CalendarPage({
                   </button>
                 );
               })}
-            </div>
-
-            <div className="mt-1 rounded-xl border border-border/60 bg-background/15 px-2 py-1 text-[10px] text-muted-foreground">
-              <span className="font-semibold text-foreground">
-                {formatDayLabel(selectedDate)}
-              </span>
-              {" · "}
-              {selectedDayTasks.length} tasks
             </div>
           </div>
         )}
