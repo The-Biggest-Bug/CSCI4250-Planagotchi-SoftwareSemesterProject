@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.1.0...planagotchi-v1.2.0) (2026-03-12)
+
+
+### Features
+
+* make calendar page use egg accent color ([5b0b652](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/5b0b652ebf59226317facef5226d8755a4c06ff9))
+* make calendar page use egg accent color ([76aa8d4](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/76aa8d4f3f74e5b9af7c6ad881459497d8b4670e))
+
+
+### Bug Fixes
+
+* fix task time being automatically input with tomorrow rather than today ([519fd2b](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/519fd2bffc6f0f8e5e37f7def72f89f18b37d09a))
+
 ## [1.1.0](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.0.1...planagotchi-v1.1.0) (2026-03-11)
 
 
