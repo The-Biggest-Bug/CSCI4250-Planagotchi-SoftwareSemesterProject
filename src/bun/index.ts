@@ -9,7 +9,12 @@ import { desc, eq } from "drizzle-orm";
 import config from "../../electrobun.config";
 import { db } from "../db/client";
 import { todos, appSettings } from "../db/schema";
-import type { MainViewRPC, TodoDTO } from "../shared/rpc";
+import type {
+  AppBackgroundDTO,
+  AppSettingsDTO,
+  MainViewRPC,
+  TodoDTO,
+} from "../shared/rpc";
 
 const APP_NAME = config.app.name;
 const DEV_SERVER_PORT = 5173;
@@ -41,6 +46,60 @@ function mapTodo(row: typeof todos.$inferSelect): TodoDTO {
     createdAt: new Date(row.createdAt).toISOString(),
     dueAt: row.dueAt ? new Date(row.dueAt).toISOString() : null,
   };
+}
+
+const DEFAULT_EGG_COLOR = "#CAF0FE";
+const DEFAULT_EGG_BACKGROUND = "egg-triangles";
+const DEFAULT_DINO_BACKGROUND: AppBackgroundDTO = {
+  kind: "preset",
+  value: "dino-landscape",
+};
+
+function normalizeEggBackground(value: string | null | undefined) {
+  return value?.trim() || DEFAULT_EGG_BACKGROUND;
+}
+
+function normalizeDinoBackground(
+  background: AppBackgroundDTO,
+): AppBackgroundDTO {
+  const kind = background.kind === "custom" ? "custom" : "preset";
+  const value = background.value?.trim();
+
+  if (!value) {
+    return DEFAULT_DINO_BACKGROUND;
+  }
+
+  return { kind, value };
+}
+
+function mapAppSettings(row: typeof appSettings.$inferSelect): AppSettingsDTO {
+  return {
+    eggColor: row.eggColor || DEFAULT_EGG_COLOR,
+    eggBackground: normalizeEggBackground(row.eggBackgroundValue),
+    dinoBackground: normalizeDinoBackground({
+      kind: row.dinoBackgroundKind === "custom" ? "custom" : "preset",
+      value: row.dinoBackgroundValue || DEFAULT_DINO_BACKGROUND.value,
+    }),
+  };
+}
+
+async function getOrCreateAppSettings() {
+  const [existing] = await db.select().from(appSettings).limit(1);
+  if (existing) {
+    return existing;
+  }
+
+  const [inserted] = await db
+    .insert(appSettings)
+    .values({
+      eggColor: DEFAULT_EGG_COLOR,
+      eggBackgroundValue: DEFAULT_EGG_BACKGROUND,
+      dinoBackgroundKind: DEFAULT_DINO_BACKGROUND.kind,
+      dinoBackgroundValue: DEFAULT_DINO_BACKGROUND.value,
+    })
+    .returning();
+
+  return inserted;
 }
 
 const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
@@ -96,19 +155,12 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
         await db.delete(todos).where(eq(todos.id, id));
         return { success: true };
       },
-      getEggColor: async () => {
-        const [existing] = await db.select().from(appSettings).limit(1);
-        if (existing) {
-          return { color: existing.eggColor };
-        }
-        const [inserted] = await db
-          .insert(appSettings)
-          .values({ eggColor: "#CAF0FE" })
-          .returning();
-        return { color: inserted.eggColor };
+      getAppSettings: async () => {
+        const settings = await getOrCreateAppSettings();
+        return mapAppSettings(settings);
       },
       setEggColor: async ({ color }) => {
-        const [existing] = await db.select().from(appSettings).limit(1);
+        const existing = await getOrCreateAppSettings();
         if (existing) {
           const [updated] = await db
             .update(appSettings)
@@ -119,9 +171,44 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
         }
         const [inserted] = await db
           .insert(appSettings)
-          .values({ eggColor: color })
+          .values({
+            eggColor: color,
+            eggBackgroundValue: DEFAULT_EGG_BACKGROUND,
+            dinoBackgroundKind: DEFAULT_DINO_BACKGROUND.kind,
+            dinoBackgroundValue: DEFAULT_DINO_BACKGROUND.value,
+          })
           .returning();
         return { color: inserted.eggColor };
+      },
+      setEggBackground: async ({ value }) => {
+        const existing = await getOrCreateAppSettings();
+        const nextValue = normalizeEggBackground(value);
+
+        const [updated] = await db
+          .update(appSettings)
+          .set({ eggBackgroundValue: nextValue })
+          .where(eq(appSettings.id, existing.id))
+          .returning();
+
+        return { value: normalizeEggBackground(updated.eggBackgroundValue) };
+      },
+      setDinoBackground: async (background) => {
+        const existing = await getOrCreateAppSettings();
+        const nextBackground = normalizeDinoBackground(background);
+
+        const [updated] = await db
+          .update(appSettings)
+          .set({
+            dinoBackgroundKind: nextBackground.kind,
+            dinoBackgroundValue: nextBackground.value,
+          })
+          .where(eq(appSettings.id, existing.id))
+          .returning();
+
+        return normalizeDinoBackground({
+          kind: updated.dinoBackgroundKind === "custom" ? "custom" : "preset",
+          value: updated.dinoBackgroundValue,
+        });
       },
       closeApp: async () => {
         mainWindow.close();

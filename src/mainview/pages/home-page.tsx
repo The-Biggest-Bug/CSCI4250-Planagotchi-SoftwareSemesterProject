@@ -10,9 +10,16 @@ import type { ButtonConfig, Navigate } from "@/mainview/types";
 interface HomePageProps {
   navigate: Navigate;
   eggFillColor: string;
+  eggBackgroundImageUrl: string;
+  dinoBackgroundImageUrl: string;
 }
 
-export default function HomePage({ navigate, eggFillColor }: HomePageProps) {
+export default function HomePage({
+  navigate,
+  eggFillColor,
+  eggBackgroundImageUrl,
+  dinoBackgroundImageUrl,
+}: HomePageProps) {
   const buttons: ButtonConfig[] = [
     {
       icon: CalendarDaysIcon,
@@ -32,31 +39,25 @@ export default function HomePage({ navigate, eggFillColor }: HomePageProps) {
   ];
 
   return (
-    <Layout buttons={buttons} eggFillColor={eggFillColor}>
+    <Layout
+      buttons={buttons}
+      eggFillColor={eggFillColor}
+      eggBackgroundImageUrl={eggBackgroundImageUrl}
+      dinoBackgroundImageUrl={dinoBackgroundImageUrl}
+    >
       <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center blur-[1px] scale-105"
-          style={{
-            backgroundImage:
-              'url("views://mainview/assets/egg-background.webp")',
-          }}
-        />
-
         <div className="relative w-3/5 flex flex-col items-center justify-center gap-3">
           <div className="flex justify-center">
             <div className="inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 border border-white/20">
               {Array.from({ length: 5 }).map((_, idx) => (
-                <HeartIcon
-                  key={idx}
-                  className="w-4 h-4 text-rose-400"
-                />
+                <HeartIcon key={idx} className="w-4 h-4 text-rose-400" />
               ))}
             </div>
           </div>
 
           <div className="aspect-square flex flex-col items-center justify-center w-full gap-2">
             <img
-              src="views://mainview/assets/evolution0.png"
+              src="views://mainview/assets/dino/evolution0.png"
               alt="pet"
               className="w-4/5 h-4/5 object-contain drop-shadow-[0_6px_10px_rgba(0,0,0,0.9)]"
               draggable={false}

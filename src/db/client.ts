@@ -35,13 +35,103 @@ try {
 sqlite.run(`
   CREATE TABLE IF NOT EXISTS app_settings (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    egg_color TEXT NOT NULL DEFAULT '#CAF0FE'
+    egg_color TEXT NOT NULL DEFAULT '#CAF0FE',
+    background_kind TEXT NOT NULL DEFAULT 'preset',
+    background_value TEXT NOT NULL DEFAULT 'egg-triangles',
+    egg_background_value TEXT NOT NULL DEFAULT 'egg-triangles',
+    dino_background_kind TEXT NOT NULL DEFAULT 'preset',
+    dino_background_value TEXT NOT NULL DEFAULT 'dino-landscape'
   );
 `);
 
+try {
+  sqlite.run(
+    `ALTER TABLE app_settings ADD COLUMN background_kind TEXT NOT NULL DEFAULT 'preset'`,
+  );
+} catch {
+  // column already exists
+}
+
+try {
+  sqlite.run(
+    `ALTER TABLE app_settings ADD COLUMN background_value TEXT NOT NULL DEFAULT 'egg-triangles'`,
+  );
+} catch {
+  // column already exists
+}
+
+try {
+  sqlite.run(
+    `ALTER TABLE app_settings ADD COLUMN egg_background_value TEXT NOT NULL DEFAULT 'egg-triangles'`,
+  );
+} catch {
+  // column already exists
+}
+
+try {
+  sqlite.run(
+    `ALTER TABLE app_settings ADD COLUMN dino_background_kind TEXT NOT NULL DEFAULT 'preset'`,
+  );
+} catch {
+  // column already exists
+}
+
+try {
+  sqlite.run(
+    `ALTER TABLE app_settings ADD COLUMN dino_background_value TEXT NOT NULL DEFAULT 'dino-landscape'`,
+  );
+} catch {
+  // column already exists
+}
+
 sqlite.run(`
-  INSERT INTO app_settings (id, egg_color)
-  SELECT 1, '#CAF0FE'
+  UPDATE app_settings
+  SET background_kind = 'preset'
+  WHERE background_kind IS NULL OR background_kind = '';
+`);
+
+sqlite.run(`
+  UPDATE app_settings
+  SET background_value = 'egg-triangles'
+  WHERE background_value IS NULL OR background_value = '';
+`);
+
+sqlite.run(`
+  UPDATE app_settings
+  SET egg_background_value = 'egg-triangles'
+  WHERE egg_background_value IS NULL OR egg_background_value = '';
+`);
+
+sqlite.run(`
+  UPDATE app_settings
+  SET dino_background_kind = COALESCE(NULLIF(background_kind, ''), 'preset')
+  WHERE dino_background_kind IS NULL OR dino_background_kind = '';
+`);
+
+sqlite.run(`
+  UPDATE app_settings
+  SET dino_background_value = COALESCE(NULLIF(background_value, ''), 'dino-landscape')
+  WHERE dino_background_value IS NULL OR dino_background_value = '';
+`);
+
+sqlite.run(`
+  INSERT INTO app_settings (
+    id,
+    egg_color,
+    background_kind,
+    background_value,
+    egg_background_value,
+    dino_background_kind,
+    dino_background_value
+  )
+  SELECT
+    1,
+    '#CAF0FE',
+    'preset',
+    'egg-triangles',
+    'egg-triangles',
+    'preset',
+    'dino-landscape'
   WHERE NOT EXISTS (SELECT 1 FROM app_settings WHERE id = 1);
 `);
 
