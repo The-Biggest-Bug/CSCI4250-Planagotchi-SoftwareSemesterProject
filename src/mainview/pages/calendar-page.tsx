@@ -126,6 +126,28 @@ function buildLinePath(points: Array<{ x: number; y: number }>) {
     .join(" ");
 }
 
+function withAlpha(color: string, alpha: number) {
+  if (/^#([0-9a-f]{6})$/i.test(color)) {
+    const normalizedAlpha = Math.round(Math.min(Math.max(alpha, 0), 1) * 255);
+    return `${color}${normalizedAlpha.toString(16).padStart(2, "0")}`;
+  }
+
+  if (/^#([0-9a-f]{3})$/i.test(color)) {
+    const [, shortHex] = color.match(/^#([0-9a-f]{3})$/i) ?? [];
+
+    if (shortHex) {
+      const expanded = shortHex
+        .split("")
+        .map((char) => `${char}${char}`)
+        .join("");
+      const normalizedAlpha = Math.round(Math.min(Math.max(alpha, 0), 1) * 255);
+      return `#${expanded}${normalizedAlpha.toString(16).padStart(2, "0")}`;
+    }
+  }
+
+  return color;
+}
+
 export default function CalendarPage({
   navigate,
   eggFillColor,
@@ -146,6 +168,11 @@ export default function CalendarPage({
     [todos],
   );
 
+  const incompleteScheduledTodos = useMemo(
+    () => scheduledTodos.filter((todo) => !todo.completed),
+    [scheduledTodos],
+  );
+
   const todosByDay = useMemo(() => {
     const grouped = new Map<string, TodoDTO[]>();
 
@@ -164,13 +191,31 @@ export default function CalendarPage({
     return grouped;
   }, [scheduledTodos]);
 
+  const incompleteTodosByDay = useMemo(() => {
+    const grouped = new Map<string, TodoDTO[]>();
+
+    for (const todo of incompleteScheduledTodos) {
+      const day = startOfDay(new Date(todo.dueAt!));
+      const key = getDateKey(day);
+      const current = grouped.get(key) ?? [];
+      current.push(todo);
+      grouped.set(key, current);
+    }
+
+    for (const [key, list] of grouped.entries()) {
+      grouped.set(key, [...list].sort(compareTodos));
+    }
+
+    return grouped;
+  }, [incompleteScheduledTodos]);
+
   const weekDays = useMemo(() => {
     const start = startOfWeek(focusDate);
     return Array.from({ length: 7 }, (_, index) => addDays(start, index));
   }, [focusDate]);
 
   const weekCounts = weekDays.map(
-    (day) => todosByDay.get(getDateKey(day))?.length ?? 0,
+    (day) => incompleteTodosByDay.get(getDateKey(day))?.length ?? 0,
   );
   const maxWeekCount = Math.max(...weekCounts, 0);
   const chartPoints = weekCounts.map((count, index) => {
@@ -286,6 +331,10 @@ export default function CalendarPage({
 
   const periodLabel =
     mode === "week" ? formatWeekLabel(focusDate) : formatMonthLabel(focusDate);
+  const selectedDayStyle = {
+    borderColor: eggFillColor,
+    backgroundColor: withAlpha(eggFillColor, 0.12),
+  };
 
   return (
     <Layout buttons={buttons} eggFillColor={eggFillColor}>
@@ -338,7 +387,8 @@ export default function CalendarPage({
                     key={getDateKey(day)}
                     type="button"
                     onClick={() => openDay(day)}
-                    className={`rounded-md border px-0.5 py-1 text-center transition ${isSelected ? "border-sky-400 bg-sky-400/10" : "border-border/60 bg-background/20 hover:bg-accent/40"} ${isToday && !isSelected ? "border-amber-300/80" : ""}`}
+                    className={`rounded-md border px-0.5 py-1 text-center transition ${isSelected ? "" : "border-border/60 bg-background/20 hover:bg-accent/40"} ${isToday && !isSelected ? "border-amber-300/80" : ""}`}
+                    style={isSelected ? selectedDayStyle : undefined}
                   >
                     <div className="text-[8px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
                       {DAY_INITIALS[day.getDay()]}
@@ -384,7 +434,7 @@ export default function CalendarPage({
                 <path
                   d={buildLinePath(chartPoints)}
                   fill="none"
-                  stroke="#38bdf8"
+                  stroke={eggFillColor}
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -398,10 +448,10 @@ export default function CalendarPage({
                       r="3.5"
                       fill={
                         isSameDay(weekDays[index], selectedDate)
-                          ? "#e0f2fe"
+                          ? eggFillColor
                           : "hsl(var(--card))"
                       }
-                      stroke="#38bdf8"
+                      stroke={eggFillColor}
                       strokeWidth="1.5"
                     />
                   </g>
@@ -433,6 +483,8 @@ export default function CalendarPage({
             <div className="grid grid-cols-7 gap-0.5">
               {monthDays.map((day) => {
                 const tasks = todosByDay.get(getDateKey(day)) ?? [];
+                const hasIncomplete = tasks.some((task) => !task.completed);
+                const hasComplete = tasks.some((task) => task.completed);
                 const isSelected = isSameDay(day, selectedDate);
                 const isCurrentMonth = isSameMonth(day, focusDate);
                 const isToday = isSameDay(day, new Date());
@@ -442,7 +494,8 @@ export default function CalendarPage({
                     key={getDateKey(day)}
                     type="button"
                     onClick={() => openDay(day)}
-                    className={`relative h-[24px] rounded-md border transition ${isSelected ? "border-sky-400 bg-sky-400/10" : isCurrentMonth ? "border-border/60 bg-background/20 hover:bg-accent/40" : "border-transparent bg-background/10"} ${isToday && !isSelected ? "border-amber-300/80" : ""}`}
+                    className={`relative h-[24px] rounded-md border transition ${isSelected ? "" : isCurrentMonth ? "border-border/60 bg-background/20 hover:bg-accent/40" : "border-transparent bg-background/10"} ${isToday && !isSelected ? "border-amber-300/80" : ""}`}
+                    style={isSelected ? selectedDayStyle : undefined}
                   >
                     <span
                       className={`absolute inset-0 flex items-center justify-center text-[10px] font-semibold ${isCurrentMonth ? "text-foreground" : "text-muted-foreground/50"}`}
@@ -450,13 +503,21 @@ export default function CalendarPage({
                       {day.getDate()}
                     </span>
                     <span className="absolute bottom-[2px] left-1/2 flex -translate-x-1/2 items-center justify-center gap-px">
-                      {Array.from({ length: Math.min(tasks.length, 3) }).map(
-                        (_, index) => (
+                      {[hasIncomplete, hasComplete].map((showDot, index) =>
+                        showDot ? (
                           <span
                             key={index}
-                            className={`h-[2px] w-[2px] rounded-full ${isSelected ? "bg-sky-400/90" : isCurrentMonth ? "bg-muted-foreground/80" : "bg-muted-foreground/35"}`}
+                            className="h-[2px] w-[2px] rounded-full"
+                            style={{
+                              backgroundColor:
+                                index === 0
+                                  ? eggFillColor
+                                  : isCurrentMonth
+                                    ? "rgba(148, 163, 184, 0.85)"
+                                    : "rgba(148, 163, 184, 0.35)",
+                            }}
                           />
-                        ),
+                        ) : null,
                       )}
                     </span>
                   </button>
