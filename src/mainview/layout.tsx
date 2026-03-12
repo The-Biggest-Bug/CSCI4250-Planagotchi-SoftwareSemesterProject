@@ -37,18 +37,29 @@ export default function Layout({
           <clipPath id="egg-clip" clipPathUnits="userSpaceOnUse">
             <path d={EGG_RINGS} />
           </clipPath>
+          <pattern
+            id="egg-texture"
+            patternUnits="userSpaceOnUse"
+            width="298"
+            height="359"
+          >
+            <image
+              href="views://mainview/assets/egg-texture-placeholder.png"
+              x="0"
+              y="0"
+              width="298"
+              height="359"
+              preserveAspectRatio="xMidYMid slice"
+            />
+          </pattern>
         </defs>
-        <image
-          href="views://mainview/assets/egg-texture-placeholder.png"
-          x="0"
-          y="0"
-          width="298"
-          height="359"
-          preserveAspectRatio="xMidYMid slice"
+        <path
+          d={EGG_RINGS}
+          fill="url(#egg-texture)"
           clipPath="url(#egg-clip)"
-          className="grayscale"
+          opacity="0.9"
         />
-        <path fill={eggFillColor} opacity="0.45" d={EGG_RINGS} />
+        <path d={EGG_RINGS} fill={eggFillColor} opacity="0.7" />
       </svg>
 
       <div className="relative z-10 flex flex-col items-center justify-center h-full px-10 overflow-hidden">
