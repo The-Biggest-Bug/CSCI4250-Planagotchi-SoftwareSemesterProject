@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatDateInputValue, formatTimeInputValue } from "@/lib/utils";
 import type { TodoDTO } from "@/shared/rpc";
 import { electroview } from "@/shared/electrobun";
 
@@ -12,8 +13,8 @@ interface EditTaskModalProps {
 function parseDueAt(dueAt: string | null) {
   if (!dueAt) return { date: "", time: "" };
   const d = new Date(dueAt);
-  const date = d.toISOString().slice(0, 10);
-  const time = d.toTimeString().slice(0, 5);
+  const date = formatDateInputValue(d);
+  const time = formatTimeInputValue(d);
   return { date, time };
 }
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatDateInputValue, formatTimeInputValue } from "@/lib/utils";
 import type { TodoDTO } from "@/shared/rpc";
 import { electroview } from "@/shared/electrobun";
 
@@ -15,11 +16,11 @@ export default function CreateTaskModal({
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(() => {
     const now = new Date();
-    return now.toISOString().slice(0, 10);
+    return formatDateInputValue(now);
   });
   const [time, setTime] = useState(() => {
     const now = new Date();
-    return now.toTimeString().slice(0, 5);
+    return formatTimeInputValue(now);
   });
   const [submitting, setSubmitting] = useState(false);
 
