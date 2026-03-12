@@ -6,7 +6,6 @@
 ### Features
 
 * make calendar page use egg accent color ([5b0b652](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/5b0b652ebf59226317facef5226d8755a4c06ff9))
-* make calendar page use egg accent color ([76aa8d4](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/76aa8d4f3f74e5b9af7c6ad881459497d8b4670e))
 
 
 ### Bug Fixes
