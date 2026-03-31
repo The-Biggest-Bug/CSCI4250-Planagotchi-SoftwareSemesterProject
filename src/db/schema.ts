@@ -14,4 +14,11 @@ export const todos = sqliteTable("todos", {
 export const appSettings = sqliteTable("app_settings", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   eggColor: text("egg_color").notNull().default("#CAF0FE"),
+  eggBackgroundValue: text("egg_background_value")
+    .notNull()
+    .default("egg-triangles"),
+  dinoBackgroundKind: text("dino_background_kind").notNull().default("preset"),
+  dinoBackgroundValue: text("dino_background_value")
+    .notNull()
+    .default("dino-landscape"),
 });

@@ -9,6 +9,19 @@ export interface TodoDTO {
   dueAt: string | null;
 }
 
+export type AppBackgroundKind = "preset" | "custom";
+
+export interface AppBackgroundDTO {
+  kind: AppBackgroundKind;
+  value: string;
+}
+
+export interface AppSettingsDTO {
+  eggColor: string;
+  eggBackground: string;
+  dinoBackground: AppBackgroundDTO;
+}
+
 export type MainViewRPC = {
   bun: RPCSchema<{
     requests: {
@@ -37,13 +50,21 @@ export type MainViewRPC = {
         params: { id: number };
         response: { success: boolean };
       };
-      getEggColor: {
+      getAppSettings: {
         params: {};
-        response: { color: string };
+        response: AppSettingsDTO;
       };
       setEggColor: {
         params: { color: string };
         response: { color: string };
+      };
+      setEggBackground: {
+        params: { value: string };
+        response: { value: string };
+      };
+      setDinoBackground: {
+        params: AppBackgroundDTO;
+        response: AppBackgroundDTO;
       };
       closeApp: {
         params: {};

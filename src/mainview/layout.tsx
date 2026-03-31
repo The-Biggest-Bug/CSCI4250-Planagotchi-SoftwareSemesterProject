@@ -12,12 +12,16 @@ interface LayoutProps {
   children: ReactNode;
   buttons: ButtonConfig[];
   eggFillColor?: string;
+  eggBackgroundImageUrl?: string;
+  dinoBackgroundImageUrl?: string;
 }
 
 export default function Layout({
   children,
   buttons,
   eggFillColor = "#CAF0FE",
+  eggBackgroundImageUrl,
+  dinoBackgroundImageUrl,
 }: LayoutProps) {
   const buttonShellClass =
     "rounded-[50%] bg-card border border-border/60 text-foreground/70 shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] hover:brightness-110 hover:bg-card focus-visible:ring-white/30 electrobun-webkit-app-region-no-drag";
@@ -37,23 +41,45 @@ export default function Layout({
           <clipPath id="egg-clip" clipPathUnits="userSpaceOnUse">
             <path d={EGG_RINGS} />
           </clipPath>
+          {eggBackgroundImageUrl ? (
+            <pattern
+              id="egg-texture"
+              patternUnits="userSpaceOnUse"
+              width="298"
+              height="359"
+            >
+              <image
+                href={eggBackgroundImageUrl}
+                x="0"
+                y="0"
+                width="298"
+                height="359"
+                preserveAspectRatio="xMidYMid slice"
+              />
+            </pattern>
+          ) : null}
         </defs>
-        <image
-          href="views://mainview/assets/egg-texture-placeholder.png"
-          x="0"
-          y="0"
-          width="298"
-          height="359"
-          preserveAspectRatio="xMidYMid slice"
-          clipPath="url(#egg-clip)"
-          className="grayscale"
+        {eggBackgroundImageUrl ? (
+          <path
+            d={EGG_RINGS}
+            fill="url(#egg-texture)"
+            clipPath="url(#egg-clip)"
+            opacity="0.9"
+          />
+        ) : null}
+        <path
+          d={EGG_RINGS}
+          fill={eggFillColor}
+          opacity="0.85"
+          style={{ mixBlendMode: "color" }}
         />
-        <path fill={eggFillColor} opacity="0.45" d={EGG_RINGS} />
       </svg>
 
-      <div className="relative z-10 flex flex-col items-center justify-center h-full px-10 overflow-hidden">
+      <div className="relative z-10 flex flex-col items-center justify-center h-full px-10 overflow-hidden mt-8">
         <div className="mb-2">
-          <Screen>{children}</Screen>
+          <Screen backgroundImageUrl={dinoBackgroundImageUrl}>
+            {children}
+          </Screen>
         </div>
         <div className="mt-1 flex flex-col items-center gap-3">
           <div className="flex items-end justify-center gap-3">

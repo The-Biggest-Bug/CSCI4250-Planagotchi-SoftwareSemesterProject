@@ -22,6 +22,7 @@ type CalendarMode = "week" | "month";
 interface CalendarPageProps {
   navigate: Navigate;
   eggFillColor: string;
+  eggBackgroundImageUrl?: string;
 }
 
 const DAY_INITIALS = ["S", "M", "T", "W", "T", "F", "S"];
@@ -151,6 +152,7 @@ function withAlpha(color: string, alpha: number) {
 export default function CalendarPage({
   navigate,
   eggFillColor,
+  eggBackgroundImageUrl,
 }: CalendarPageProps) {
   const { todos, loading, toggleTodo, updateTodo, deleteTodo } = useTodos();
   const [mode, setMode] = useState<CalendarMode>("week");
@@ -337,7 +339,7 @@ export default function CalendarPage({
   };
 
   return (
-    <Layout buttons={buttons} eggFillColor={eggFillColor}>
+    <Layout buttons={buttons} eggFillColor={eggFillColor} eggBackgroundImageUrl={eggBackgroundImageUrl}>
       <div className="relative flex h-full flex-col overflow-hidden text-foreground">
         <div className="border-b border-border/60 px-2 py-1.5">
           <div className="flex items-center justify-between gap-2">

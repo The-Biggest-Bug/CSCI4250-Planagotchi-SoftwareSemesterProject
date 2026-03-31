@@ -12,9 +12,10 @@ import type { TodoDTO } from "@/shared/rpc";
 interface TasksPageProps {
   navigate: Navigate;
   eggFillColor: string;
+  eggBackgroundImageUrl?: string;
 }
 
-export default function TasksPage({ navigate, eggFillColor }: TasksPageProps) {
+export default function TasksPage({ navigate, eggFillColor, eggBackgroundImageUrl }: TasksPageProps) {
   const { todos, loading, addTodo, updateTodo, deleteTodo, toggleTodo } =
     useTodos();
   const [showCreate, setShowCreate] = useState(false);
@@ -70,7 +71,7 @@ export default function TasksPage({ navigate, eggFillColor }: TasksPageProps) {
   ];
 
   return (
-    <Layout buttons={buttons} eggFillColor={eggFillColor}>
+    <Layout buttons={buttons} eggFillColor={eggFillColor} eggBackgroundImageUrl={eggBackgroundImageUrl}>
       <div className="w-full h-full flex flex-col overflow-hidden relative">
         <TodoList
           todos={todos}
