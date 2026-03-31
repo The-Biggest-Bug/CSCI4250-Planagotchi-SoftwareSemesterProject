@@ -55,6 +55,8 @@ const dinoBackgroundMap = new Map(
 export function resolveEggBackgroundImageUrl(
   eggBackgroundValue: string | null | undefined,
 ) {
+  if (eggBackgroundValue?.startsWith("data:")) return eggBackgroundValue;
+  
   return (
     eggBackgroundMap.get(eggBackgroundValue || "")?.imageUrl ||
     eggBackgroundMap.get(DEFAULT_EGG_BACKGROUND)!.imageUrl

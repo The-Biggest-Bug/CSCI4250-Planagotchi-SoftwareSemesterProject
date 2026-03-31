@@ -1,6 +1,7 @@
 import { useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import Layout from "@/mainview/layout";
 import {
+  ArrowUpTrayIcon,
   Cog6ToothIcon,
   HomeIcon,
   ListBulletIcon,
@@ -9,9 +10,7 @@ import {
 import {
   DINO_BACKGROUND_OPTIONS,
   EGG_BACKGROUND_OPTIONS,
-  type BackgroundOption,
 } from "@/mainview/backgrounds";
-import { Button } from "@/mainview/components/ui/button";
 import type { ButtonConfig, Navigate } from "@/mainview/types";
 import type { AppBackgroundDTO } from "@/shared/rpc";
 
@@ -108,11 +107,9 @@ function SettingsRow({
 }
 
 function BackgroundButton({
-  label,
   imageUrl,
   onClick,
 }: {
-  label: string;
   imageUrl: string;
   onClick: () => void;
 }) {
@@ -120,11 +117,8 @@ function BackgroundButton({
     <button
       type="button"
       onClick={onClick}
-      className="flex min-w-0 flex-1 flex-col gap-2 text-left transition opacity-90 hover:opacity-100 electrobun-webkit-app-region-no-drag"
+      className="flex min-w-0 flex-1 flex-col text-left transition opacity-90 hover:opacity-100 electrobun-webkit-app-region-no-drag"
     >
-      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-white/80">
-        {label}
-      </span>
       <div
         className="h-14 w-full rounded-lg bg-cover bg-center"
         style={{ backgroundImage: `url("${imageUrl}")` }}
@@ -133,44 +127,6 @@ function BackgroundButton({
   );
 }
 
-function BackgroundGrid({
-  options,
-  selectedValue,
-  onSelect,
-}: {
-  options: readonly BackgroundOption[];
-  selectedValue: string;
-  onSelect: (value: string) => void;
-}) {
-  return (
-    <div className="grid grid-cols-2 gap-2">
-      {options.map((option) => {
-        const isSelected = selectedValue === option.id;
-
-        return (
-          <button
-            key={option.id}
-            type="button"
-            onClick={() => onSelect(option.id)}
-            className={`rounded-xl border p-1 text-left transition electrobun-webkit-app-region-no-drag ${
-              isSelected
-                ? "border-sky-300 bg-sky-200/20 shadow-[0_0_0_1px_rgba(125,211,252,0.6)]"
-                : "border-white/15 bg-black/30 hover:bg-white/10"
-            }`}
-          >
-            <div
-              className="h-14 rounded-lg bg-cover bg-center"
-              style={{ backgroundImage: `url("${option.imageUrl}")` }}
-            />
-            <div className="px-1 pt-1 text-[9px] uppercase tracking-[0.18em] text-white/75">
-              {option.label}
-            </div>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 function PickerModal({
   title,
@@ -210,10 +166,13 @@ export default function SettingsPage({
   onEggBackgroundChange,
   onDinoBackgroundChange,
 }: SettingsPageProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const eggFileInputRef = useRef<HTMLInputElement>(null);
+  const dinoFileInputRef = useRef<HTMLInputElement>(null);
   const [activePicker, setActivePicker] = useState<ActivePicker>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [eggUploadError, setEggUploadError] = useState<string | null>(null);
+  const [eggIsUploading, setEggIsUploading] = useState(false);
+  const [dinoUploadError, setDinoUploadError] = useState<string | null>(null);
+  const [dinoIsUploading, setDinoIsUploading] = useState(false);
 
   const buttons: ButtonConfig[] = [
     { icon: HomeIcon, onClick: () => navigate("home"), ariaLabel: "home" },
@@ -231,39 +190,57 @@ export default function SettingsPage({
   };
 
   const handleDinoBackgroundSelect = async (value: string) => {
-    setUploadError(null);
+    setDinoUploadError(null);
     await onDinoBackgroundChange({ kind: "preset", value });
     setActivePicker(null);
   };
 
-  const handleCustomUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleEggCustomUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
+    if (!file) return;
 
-    if (!file) {
-      return;
+    setEggUploadError(null);
+    setEggIsUploading(true);
+
+    try {
+      const value = await fileToBackgroundDataUrl(file);
+      await onEggBackgroundChange(value);
+      setActivePicker(null);
+    } catch (error) {
+      setEggUploadError(
+        error instanceof Error ? error.message : "That image could not be used.",
+      );
+    } finally {
+      setEggIsUploading(false);
     }
+  };
 
-    setUploadError(null);
-    setIsUploading(true);
+  const handleDinoCustomUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setDinoUploadError(null);
+    setDinoIsUploading(true);
 
     try {
       const value = await fileToBackgroundDataUrl(file);
       await onDinoBackgroundChange({ kind: "custom", value });
       setActivePicker(null);
     } catch (error) {
-      setUploadError(
-        error instanceof Error
-          ? error.message
-          : "That image could not be used.",
+      setDinoUploadError(
+        error instanceof Error ? error.message : "That image could not be used.",
       );
     } finally {
-      setIsUploading(false);
+      setDinoIsUploading(false);
     }
   };
 
+  const isEggCustom = eggBackground?.startsWith("data:");
+
   return (
-    <Layout buttons={buttons} eggFillColor={eggFillColor}>
+    <Layout buttons={buttons} eggFillColor={eggFillColor} eggBackgroundImageUrl={eggBackgroundImageUrl}>
       <div className="relative h-full w-full overflow-hidden px-2 py-3">
         <div className="flex flex-col gap-3">
           <h2 className="px-1 text-base font-semibold text-white">Settings</h2>
@@ -293,12 +270,10 @@ export default function SettingsPage({
             </div>
             <div className="flex gap-2">
               <BackgroundButton
-                label="Egg bg"
                 imageUrl={eggBackgroundImageUrl}
                 onClick={() => setActivePicker("egg")}
               />
               <BackgroundButton
-                label="Dino bg"
                 imageUrl={dinoBackgroundImageUrl}
                 onClick={() => setActivePicker("dino")}
               />
@@ -311,11 +286,64 @@ export default function SettingsPage({
             title="Egg Background"
             onClose={() => setActivePicker(null)}
           >
-            <BackgroundGrid
-              options={EGG_BACKGROUND_OPTIONS}
-              selectedValue={eggBackground}
-              onSelect={(value) => void handleEggBackgroundSelect(value)}
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => eggFileInputRef.current?.click()}
+                disabled={eggIsUploading}
+                className={`rounded-xl border p-1 text-left transition electrobun-webkit-app-region-no-drag ${
+                  isEggCustom
+                    ? "border-sky-300 bg-sky-200/20 shadow-[0_0_0_1px_rgba(125,211,252,0.6)]"
+                    : "border-white/15 bg-black/30 hover:bg-white/10"
+                }`}
+              >
+                <div
+                  className="relative h-14 rounded-lg bg-cover bg-center bg-black/20 flex items-center justify-center"
+                  style={isEggCustom ? { backgroundImage: `url("${eggBackgroundImageUrl}")` } : undefined}
+                >
+                  <ArrowUpTrayIcon className="h-4 w-4 text-white/50" />
+                  {eggIsUploading && (
+                    <span className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/40 text-[10px] text-white/70">
+                      Uploading…
+                    </span>
+                  )}
+                </div>
+              </button>
+
+              {EGG_BACKGROUND_OPTIONS.map((option) => {
+                const isSelected = !isEggCustom && eggBackground === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => void handleEggBackgroundSelect(option.id)}
+                    className={`rounded-xl border p-1 text-left transition electrobun-webkit-app-region-no-drag ${
+                      isSelected
+                        ? "border-sky-300 bg-sky-200/20 shadow-[0_0_0_1px_rgba(125,211,252,0.6)]"
+                        : "border-white/15 bg-black/30 hover:bg-white/10"
+                    }`}
+                  >
+                    <div
+                      className="h-14 rounded-lg bg-cover bg-center"
+                      style={{ backgroundImage: `url("${option.imageUrl}")` }}
+                    />
+                  </button>
+                );
+              })}
+
+              <input
+                ref={eggFileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleEggCustomUpload}
+              />
+            </div>
+            {eggUploadError ? (
+              <div className="mt-2 text-[10px] text-rose-200/85">
+                {eggUploadError}
+              </div>
+            ) : null}
           </PickerModal>
         ) : null}
 
@@ -324,57 +352,70 @@ export default function SettingsPage({
             title="Dino Background"
             onClose={() => setActivePicker(null)}
           >
-            <div className="flex flex-col gap-2.5">
-              <BackgroundGrid
-                options={DINO_BACKGROUND_OPTIONS}
-                selectedValue={
-                  dinoBackground.kind === "preset" ? dinoBackground.value : ""
-                }
-                onSelect={(value) => void handleDinoBackgroundSelect(value)}
-              />
-
-              <div
-                className={`rounded-xl border p-2 ${
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => dinoFileInputRef.current?.click()}
+                disabled={dinoIsUploading}
+                className={`rounded-xl border p-1 text-left transition electrobun-webkit-app-region-no-drag ${
                   dinoBackground.kind === "custom"
-                    ? "border-sky-300 bg-sky-200/20"
-                    : "border-white/15 bg-black/30"
+                    ? "border-sky-300 bg-sky-200/20 shadow-[0_0_0_1px_rgba(125,211,252,0.6)]"
+                    : "border-white/15 bg-black/30 hover:bg-white/10"
                 }`}
               >
                 <div
-                  className="h-16 rounded-lg bg-cover bg-center"
-                  style={{
-                    backgroundImage: `url("${dinoBackgroundImageUrl}")`,
-                  }}
-                />
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <div className="text-[10px] font-medium text-white">
-                    Custom image
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 border-white/20 bg-black/25 px-2 text-[10px] text-white hover:bg-white/10"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                  >
-                    {isUploading ? "Uploading..." : "Upload"}
-                  </Button>
+                  className="relative h-14 rounded-lg bg-cover bg-center bg-black/20 flex items-center justify-center"
+                  style={
+                    dinoBackground.kind === "custom"
+                      ? { backgroundImage: `url("${dinoBackgroundImageUrl}")` }
+                      : undefined
+                  }
+                >
+                  <ArrowUpTrayIcon className="h-4 w-4 text-white/50" />
+                  {dinoIsUploading && (
+                    <span className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/40 text-[10px] text-white/70">
+                      Uploading…
+                    </span>
+                  )}
                 </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleCustomUpload}
-                />
-                {uploadError ? (
-                  <div className="mt-2 text-[10px] text-rose-200/85">
-                    {uploadError}
-                  </div>
-                ) : null}
-              </div>
+              </button>
+
+              {DINO_BACKGROUND_OPTIONS.map((option) => {
+                const isSelected =
+                  dinoBackground.kind === "preset" &&
+                  dinoBackground.value === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => void handleDinoBackgroundSelect(option.id)}
+                    className={`rounded-xl border p-1 text-left transition electrobun-webkit-app-region-no-drag ${
+                      isSelected
+                        ? "border-sky-300 bg-sky-200/20 shadow-[0_0_0_1px_rgba(125,211,252,0.6)]"
+                        : "border-white/15 bg-black/30 hover:bg-white/10"
+                    }`}
+                  >
+                    <div
+                      className="h-14 rounded-lg bg-cover bg-center"
+                      style={{ backgroundImage: `url("${option.imageUrl}")` }}
+                    />
+                  </button>
+                );
+              })}
+
+              <input
+                ref={dinoFileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleDinoCustomUpload}
+              />
             </div>
+            {dinoUploadError ? (
+              <div className="mt-2 text-[10px] text-rose-200/85">
+                {dinoUploadError}
+              </div>
+            ) : null}
           </PickerModal>
         ) : null}
       </div>

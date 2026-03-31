@@ -101,12 +101,22 @@ export default function App() {
     },
     {
       name: "tasks",
-      component: <TasksPage navigate={setPage} eggFillColor={eggFillColor} />,
+      component: (
+        <TasksPage
+          navigate={setPage}
+          eggFillColor={eggFillColor}
+          eggBackgroundImageUrl={eggBackgroundImageUrl}
+        />
+      ),
     },
     {
       name: "calendar",
       component: (
-        <CalendarPage navigate={setPage} eggFillColor={eggFillColor} />
+        <CalendarPage
+          navigate={setPage}
+          eggFillColor={eggFillColor}
+          eggBackgroundImageUrl={eggBackgroundImageUrl}
+        />
       ),
     },
     {
