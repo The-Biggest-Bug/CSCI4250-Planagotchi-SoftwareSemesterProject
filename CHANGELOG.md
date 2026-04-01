@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.3.0](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.2.0...planagotchi-v1.3.0) (2026-04-01)
+
+
+### Features
+
+* add background customization ([6fd64a7](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/6fd64a703ec42c31dd4b1525fee9ae3066a65a14))
+* add background to the home page behind dinosaur ([68c3567](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/68c3567fbcf7e782bf5958468b9df0dfdee832b9))
+* add notifications system ([#20](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/issues/20)) ([0055eac](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/0055eac4856518a6c4f73d62d76b476f60625c17))
+* backgrounds done ([6877aa1](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/6877aa1320bc789b96e3bc03f631e7be2dd65455))
+* egg backgrounds ([e0d5541](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/e0d554172a1845729a43e0f6ea617060ada2e931))
+
 ## [1.2.0](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.1.0...planagotchi-v1.2.0) (2026-03-12)
 
 
