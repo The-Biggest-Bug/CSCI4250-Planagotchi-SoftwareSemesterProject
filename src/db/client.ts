@@ -21,15 +21,15 @@ sqlite.run(`
 `);
 
 try {
-  sqlite.run(`ALTER TABLE todos ADD COLUMN due_at INTEGER`);
+    sqlite.run(`ALTER TABLE todos ADD COLUMN due_at INTEGER`);
 } catch {
-  // column already exists
+    // column already exists
 }
 
 try {
-  sqlite.run(`ALTER TABLE todos ADD COLUMN description TEXT`);
+    sqlite.run(`ALTER TABLE todos ADD COLUMN description TEXT`);
 } catch {
-  // column already exists
+    // column already exists
 }
 
 sqlite.run(`
@@ -44,44 +44,51 @@ sqlite.run(`
   );
 `);
 
-try {
-  sqlite.run(
-    `ALTER TABLE app_settings ADD COLUMN background_kind TEXT NOT NULL DEFAULT 'preset'`,
+sqlite.run(`
+  CREATE TABLE IF NOT EXISTS notification_log (
+    key TEXT PRIMARY KEY NOT NULL,
+    sent_at INTEGER NOT NULL
   );
+`);
+
+try {
+    sqlite.run(
+        `ALTER TABLE app_settings ADD COLUMN background_kind TEXT NOT NULL DEFAULT 'preset'`,
+    );
 } catch {
-  // column already exists
+    // column already exists
 }
 
 try {
-  sqlite.run(
-    `ALTER TABLE app_settings ADD COLUMN background_value TEXT NOT NULL DEFAULT 'egg-triangles'`,
-  );
+    sqlite.run(
+        `ALTER TABLE app_settings ADD COLUMN background_value TEXT NOT NULL DEFAULT 'egg-triangles'`,
+    );
 } catch {
-  // column already exists
+    // column already exists
 }
 
 try {
-  sqlite.run(
-    `ALTER TABLE app_settings ADD COLUMN egg_background_value TEXT NOT NULL DEFAULT 'egg-triangles'`,
-  );
+    sqlite.run(
+        `ALTER TABLE app_settings ADD COLUMN egg_background_value TEXT NOT NULL DEFAULT 'egg-triangles'`,
+    );
 } catch {
-  // column already exists
+    // column already exists
 }
 
 try {
-  sqlite.run(
-    `ALTER TABLE app_settings ADD COLUMN dino_background_kind TEXT NOT NULL DEFAULT 'preset'`,
-  );
+    sqlite.run(
+        `ALTER TABLE app_settings ADD COLUMN dino_background_kind TEXT NOT NULL DEFAULT 'preset'`,
+    );
 } catch {
-  // column already exists
+    // column already exists
 }
 
 try {
-  sqlite.run(
-    `ALTER TABLE app_settings ADD COLUMN dino_background_value TEXT NOT NULL DEFAULT 'dino-landscape'`,
-  );
+    sqlite.run(
+        `ALTER TABLE app_settings ADD COLUMN dino_background_value TEXT NOT NULL DEFAULT 'dino-landscape'`,
+    );
 } catch {
-  // column already exists
+    // column already exists
 }
 
 sqlite.run(`
