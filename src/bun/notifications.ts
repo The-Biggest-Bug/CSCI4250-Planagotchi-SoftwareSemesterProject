@@ -42,13 +42,10 @@ async function wasSent(key: string) {
 }
 
 async function markSent(key: string, sentAt = new Date()) {
-  await db
-    .insert(notificationLog)
-    .values({ key, sentAt })
-    .onConflictDoUpdate({
-      target: notificationLog.key,
-      set: { sentAt },
-    });
+  await db.insert(notificationLog).values({ key, sentAt }).onConflictDoUpdate({
+    target: notificationLog.key,
+    set: { sentAt },
+  });
 }
 
 async function showWithCooldown(
@@ -94,8 +91,14 @@ async function buildDigestMessage(now: Date) {
       ),
     );
 
-  const todayTitles = clampList(today.map((t) => t.title), 6);
-  const soonTitles = clampList(soon.map((t) => t.title), 6);
+  const todayTitles = clampList(
+    today.map((t) => t.title),
+    6,
+  );
+  const soonTitles = clampList(
+    soon.map((t) => t.title),
+    6,
+  );
 
   if (todayTitles.length === 0 && soonTitles.length === 0) {
     return null;
@@ -111,7 +114,10 @@ async function buildDigestMessage(now: Date) {
   };
 }
 
-async function sendDigestIfNeeded(kind: "morning" | "evening", now = new Date()) {
+async function sendDigestIfNeeded(
+  kind: "morning" | "evening",
+  now = new Date(),
+) {
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, "0");
   const d = String(now.getDate()).padStart(2, "0");
@@ -224,4 +230,3 @@ export async function initNotifications() {
   started = true;
   await rescheduleNotifications();
 }
-

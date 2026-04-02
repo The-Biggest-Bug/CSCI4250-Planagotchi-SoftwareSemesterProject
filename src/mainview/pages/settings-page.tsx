@@ -127,7 +127,6 @@ function BackgroundButton({
   );
 }
 
-
 function PickerModal({
   title,
   onClose,
@@ -195,7 +194,9 @@ export default function SettingsPage({
     setActivePicker(null);
   };
 
-  const handleEggCustomUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleEggCustomUpload = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -209,14 +210,18 @@ export default function SettingsPage({
       setActivePicker(null);
     } catch (error) {
       setEggUploadError(
-        error instanceof Error ? error.message : "That image could not be used.",
+        error instanceof Error
+          ? error.message
+          : "That image could not be used.",
       );
     } finally {
       setEggIsUploading(false);
     }
   };
 
-  const handleDinoCustomUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleDinoCustomUpload = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -230,7 +235,9 @@ export default function SettingsPage({
       setActivePicker(null);
     } catch (error) {
       setDinoUploadError(
-        error instanceof Error ? error.message : "That image could not be used.",
+        error instanceof Error
+          ? error.message
+          : "That image could not be used.",
       );
     } finally {
       setDinoIsUploading(false);
@@ -240,7 +247,11 @@ export default function SettingsPage({
   const isEggCustom = eggBackground?.startsWith("data:");
 
   return (
-    <Layout buttons={buttons} eggFillColor={eggFillColor} eggBackgroundImageUrl={eggBackgroundImageUrl}>
+    <Layout
+      buttons={buttons}
+      eggFillColor={eggFillColor}
+      eggBackgroundImageUrl={eggBackgroundImageUrl}
+    >
       <div className="relative h-full w-full overflow-hidden px-2 py-3">
         <div className="flex flex-col gap-3">
           <h2 className="px-1 text-base font-semibold text-white">Settings</h2>
@@ -299,7 +310,11 @@ export default function SettingsPage({
               >
                 <div
                   className="relative h-14 rounded-lg bg-cover bg-center bg-black/20 flex items-center justify-center"
-                  style={isEggCustom ? { backgroundImage: `url("${eggBackgroundImageUrl}")` } : undefined}
+                  style={
+                    isEggCustom
+                      ? { backgroundImage: `url("${eggBackgroundImageUrl}")` }
+                      : undefined
+                  }
                 >
                   <ArrowUpTrayIcon className="h-4 w-4 text-white/50" />
                   {eggIsUploading && (

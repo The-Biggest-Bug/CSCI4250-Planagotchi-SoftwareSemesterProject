@@ -15,7 +15,11 @@ interface TasksPageProps {
   eggBackgroundImageUrl?: string;
 }
 
-export default function TasksPage({ navigate, eggFillColor, eggBackgroundImageUrl }: TasksPageProps) {
+export default function TasksPage({
+  navigate,
+  eggFillColor,
+  eggBackgroundImageUrl,
+}: TasksPageProps) {
   const { todos, loading, addTodo, updateTodo, deleteTodo, toggleTodo } =
     useTodos();
   const [showCreate, setShowCreate] = useState(false);
@@ -71,7 +75,11 @@ export default function TasksPage({ navigate, eggFillColor, eggBackgroundImageUr
   ];
 
   return (
-    <Layout buttons={buttons} eggFillColor={eggFillColor} eggBackgroundImageUrl={eggBackgroundImageUrl}>
+    <Layout
+      buttons={buttons}
+      eggFillColor={eggFillColor}
+      eggBackgroundImageUrl={eggBackgroundImageUrl}
+    >
       <div className="w-full h-full flex flex-col overflow-hidden relative">
         <TodoList
           todos={todos}

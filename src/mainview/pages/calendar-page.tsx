@@ -339,7 +339,11 @@ export default function CalendarPage({
   };
 
   return (
-    <Layout buttons={buttons} eggFillColor={eggFillColor} eggBackgroundImageUrl={eggBackgroundImageUrl}>
+    <Layout
+      buttons={buttons}
+      eggFillColor={eggFillColor}
+      eggBackgroundImageUrl={eggBackgroundImageUrl}
+    >
       <div className="relative flex h-full flex-col overflow-hidden text-foreground">
         <div className="border-b border-border/60 px-2 py-1.5">
           <div className="flex items-center justify-between gap-2">
