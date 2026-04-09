@@ -16,7 +16,7 @@ interface HomePageProps {
   dinoBackgroundImageUrl: string;
 }
 
-const EVOLUTION_LABELS = ["SPROUT", "HATCHLING", "DINO"];
+const EVOLUTION_LABELS = ["EGGIE", "LEGGIE", "STEGGIE"];
 
 export default function HomePage({
   navigate,
