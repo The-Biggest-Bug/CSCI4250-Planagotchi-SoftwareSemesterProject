@@ -20,11 +20,18 @@ function formatDue(dueAt: string | null) {
   return `${month} ${day}, ${h12}:${mins}${period}`;
 }
 
+function isOverdue(todo: TodoDTO) {
+  if (!todo.dueAt || todo.completed) return false;
+  return new Date(todo.dueAt).getTime() < Date.now();
+}
+
 export default function TaskDetailModal({
   todo,
   onToggle,
   onClose,
 }: TaskDetailModalProps) {
+  const overdue = isOverdue(todo);
+
   return (
     <div className="absolute inset-0 z-20 bg-card flex flex-col p-2.5 gap-1.5">
       <div className="text-sm font-semibold truncate">{todo.title}</div>
@@ -36,7 +43,9 @@ export default function TaskDetailModal({
           className="h-3.5 w-3.5 shrink-0 cursor-pointer"
         />
         {todo.dueAt && (
-          <span className="text-xs text-muted-foreground">
+          <span
+            className={`text-xs ${overdue ? "text-rose-300" : "text-muted-foreground"}`}
+          >
             {formatDue(todo.dueAt)}
           </span>
         )}

@@ -68,6 +68,7 @@ interface SettingsPageProps {
   onEggColorChange: (color: string) => void;
   onEggBackgroundChange: (value: string) => Promise<void>;
   onDinoBackgroundChange: (background: AppBackgroundDTO) => Promise<void>;
+  onResetAllData: () => Promise<void>;
 }
 
 function SettingsRow({
@@ -79,7 +80,7 @@ function SettingsRow({
   control: ReactNode;
   onClick?: () => void;
 }) {
-  const className = "w-full px-1 py-1 text-left";
+  const className = "w-full px-1 py-0.5 text-left";
 
   if (onClick) {
     return (
@@ -154,6 +155,47 @@ function PickerModal({
   );
 }
 
+function ConfirmResetModal({
+  resetting,
+  onConfirm,
+  onCancel,
+}: {
+  resetting: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/55 p-3 backdrop-blur-sm">
+      <div className="w-full max-w-[220px] rounded-2xl border border-white/15 bg-card/95 p-3 shadow-xl">
+        <div className="text-sm font-semibold text-foreground">
+          Reset all data?
+        </div>
+        <div className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          This deletes tasks, pet progress, and custom backgrounds.
+        </div>
+        <div className="mt-3 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={resetting}
+            className="rounded-md px-2.5 py-1 text-sm text-muted-foreground transition hover:bg-muted/60 disabled:opacity-60"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={resetting}
+            className="rounded-md bg-rose-500 px-2.5 py-1 text-sm text-white transition hover:bg-rose-500/90 disabled:opacity-60"
+          >
+            {resetting ? "Resetting..." : "Reset"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsPage({
   navigate,
   eggFillColor,
@@ -164,6 +206,7 @@ export default function SettingsPage({
   onEggColorChange,
   onEggBackgroundChange,
   onDinoBackgroundChange,
+  onResetAllData,
 }: SettingsPageProps) {
   const eggFileInputRef = useRef<HTMLInputElement>(null);
   const dinoFileInputRef = useRef<HTMLInputElement>(null);
@@ -172,6 +215,8 @@ export default function SettingsPage({
   const [eggIsUploading, setEggIsUploading] = useState(false);
   const [dinoUploadError, setDinoUploadError] = useState<string | null>(null);
   const [dinoIsUploading, setDinoIsUploading] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
 
   const buttons: ButtonConfig[] = [
     { icon: HomeIcon, onClick: () => navigate("home"), ariaLabel: "home" },
@@ -246,20 +291,31 @@ export default function SettingsPage({
 
   const isEggCustom = eggBackground?.startsWith("data:");
 
+  const handleResetAllData = async () => {
+    setIsResetting(true);
+
+    try {
+      await onResetAllData();
+      setShowResetModal(false);
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   return (
     <Layout
       buttons={buttons}
       eggFillColor={eggFillColor}
       eggBackgroundImageUrl={eggBackgroundImageUrl}
     >
-      <div className="relative h-full w-full overflow-hidden px-2 py-3">
-        <div className="flex flex-col gap-3">
+      <div className="relative h-full w-full overflow-hidden px-2 py-2.5">
+        <div className="flex flex-col gap-1.5">
           <h2 className="px-1 text-base font-semibold text-white">Settings</h2>
 
           <SettingsRow
             label="Egg color"
             control={
-              <label className="relative h-8 w-8 shrink-0 cursor-pointer electrobun-webkit-app-region-no-drag">
+              <label className="relative h-7 w-7 shrink-0 cursor-pointer electrobun-webkit-app-region-no-drag">
                 <span
                   className="absolute inset-0 rounded-full border border-white/30"
                   style={{ backgroundColor: eggFillColor }}
@@ -276,7 +332,7 @@ export default function SettingsPage({
           />
 
           <div className="w-full px-1 electrobun-webkit-app-region-no-drag">
-            <div className="mb-2 text-sm font-medium text-white">
+            <div className="mb-1 text-sm font-medium text-white">
               Backgrounds
             </div>
             <div className="flex gap-2">
@@ -289,6 +345,17 @@ export default function SettingsPage({
                 onClick={() => setActivePicker("dino")}
               />
             </div>
+          </div>
+
+          <div className="px-1 electrobun-webkit-app-region-no-drag">
+            <button
+              type="button"
+              onClick={() => setShowResetModal(true)}
+              disabled={isResetting}
+              className="w-full rounded-xl border border-rose-400/40 bg-rose-500/10 px-3 py-2 text-left text-sm font-medium text-rose-200 transition hover:bg-rose-500/20 disabled:cursor-wait disabled:opacity-60"
+            >
+              Reset all data
+            </button>
           </div>
         </div>
 
@@ -432,6 +499,14 @@ export default function SettingsPage({
               </div>
             ) : null}
           </PickerModal>
+        ) : null}
+
+        {showResetModal ? (
+          <ConfirmResetModal
+            resetting={isResetting}
+            onCancel={() => setShowResetModal(false)}
+            onConfirm={() => void handleResetAllData()}
+          />
         ) : null}
       </div>
     </Layout>

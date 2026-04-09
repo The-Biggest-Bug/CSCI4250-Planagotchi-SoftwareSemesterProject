@@ -22,6 +22,16 @@ export interface AppSettingsDTO {
   dinoBackground: AppBackgroundDTO;
 }
 
+export interface PetDTO {
+  health: number;
+  maxHealth: number;
+  xp: number;
+  evolutionLevel: number;
+  evolutionImageIndex: number;
+  xpIntoCurrentEvolution: number;
+  xpForNextEvolution: number;
+}
+
 export type MainViewRPC = {
   bun: RPCSchema<{
     requests: {
@@ -44,11 +54,15 @@ export type MainViewRPC = {
       };
       toggleTodo: {
         params: { id: number };
-        response: TodoDTO | null;
+        response: { todo: TodoDTO; pet: PetDTO } | null;
       };
       deleteTodo: {
         params: { id: number };
         response: { success: boolean };
+      };
+      getPetState: {
+        params: {};
+        response: PetDTO;
       };
       getAppSettings: {
         params: {};
@@ -69,6 +83,14 @@ export type MainViewRPC = {
       closeApp: {
         params: {};
         response: { success: boolean };
+      };
+      resetAllData: {
+        params: {};
+        response: {
+          success: boolean;
+          appSettings: AppSettingsDTO;
+          pet: PetDTO;
+        };
       };
     };
     messages: {};

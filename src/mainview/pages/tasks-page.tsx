@@ -7,21 +7,31 @@ import CreateTaskModal from "@/mainview/components/create-task-modal";
 import EditTaskModal from "@/mainview/components/edit-task-modal";
 import useTodos from "@/mainview/hooks/use-todos";
 import type { ButtonConfig, Navigate } from "@/mainview/types";
-import type { TodoDTO } from "@/shared/rpc";
+import type { PetDTO, TodoDTO } from "@/shared/rpc";
 
 interface TasksPageProps {
   navigate: Navigate;
+  onPetStateChange: (pet: PetDTO) => void;
   eggFillColor: string;
   eggBackgroundImageUrl?: string;
 }
 
 export default function TasksPage({
   navigate,
+  onPetStateChange,
   eggFillColor,
   eggBackgroundImageUrl,
 }: TasksPageProps) {
-  const { todos, loading, addTodo, updateTodo, deleteTodo, toggleTodo } =
-    useTodos();
+  const {
+    todos,
+    loading,
+    addTodo,
+    updateTodo,
+    deleteTodo,
+    removeTodo,
+    toggleTodo,
+  } =
+    useTodos({ onPetStateChange });
   const [showCreate, setShowCreate] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editingTodo, setEditingTodo] = useState<TodoDTO | null>(null);
@@ -50,6 +60,14 @@ export default function TasksPage({
     if (updated) {
       setViewingTodo((prev) => (prev?.id === updated.id ? updated : prev));
     }
+  };
+
+  const handleQuickDelete = async (todo: TodoDTO) => {
+    const deleted = await removeTodo(todo.id);
+    if (!deleted) return;
+
+    setViewingTodo((prev) => (prev?.id === todo.id ? null : prev));
+    setEditingTodo((prev) => (prev?.id === todo.id ? null : prev));
   };
 
   const handleSelect = (todo: TodoDTO) => {
@@ -87,6 +105,7 @@ export default function TasksPage({
           editMode={editMode}
           onToggle={handleToggle}
           onSelect={handleSelect}
+          onQuickDelete={editMode ? handleQuickDelete : undefined}
         />
 
         {viewingTodo && (

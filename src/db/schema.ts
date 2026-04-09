@@ -9,6 +9,9 @@ export const todos = sqliteTable("todos", {
     .$defaultFn(() => new Date()),
   description: text("description"),
   dueAt: integer("due_at", { mode: "timestamp_ms" }),
+  penaltyAppliedForDueAt: integer("penalty_applied_for_due_at", {
+    mode: "timestamp_ms",
+  }),
 });
 
 export const appSettings = sqliteTable("app_settings", {
@@ -26,4 +29,10 @@ export const appSettings = sqliteTable("app_settings", {
 export const notificationLog = sqliteTable("notification_log", {
   key: text("key").primaryKey().notNull(),
   sentAt: integer("sent_at", { mode: "timestamp_ms" }).notNull(),
+});
+
+export const petState = sqliteTable("pet_state", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  health: integer("health").notNull(),
+  xp: integer("xp").notNull().default(0),
 });
