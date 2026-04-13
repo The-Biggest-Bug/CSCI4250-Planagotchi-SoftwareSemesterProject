@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import type { TodoDTO } from "@/shared/rpc";
+import type { PetDTO, TodoDTO } from "@/shared/rpc";
 import { electroview } from "@/shared/electrobun";
 
-export default function useTodos() {
+interface UseTodosOptions {
+  onPetStateChange?: (pet: PetDTO) => void;
+}
+
+export default function useTodos(options: UseTodosOptions = {}) {
+  const { onPetStateChange } = options;
   const [todos, setTodos] = useState<TodoDTO[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,15 +39,24 @@ export default function useTodos() {
     setTodos((prev) => prev.filter((todo) => todo.id !== id));
   }, []);
 
+  const removeTodo = useCallback(async (id: number) => {
+    const result = await electroview.rpc!.request.deleteTodo({ id });
+    if (result.success) {
+      setTodos((prev) => prev.filter((todo) => todo.id !== id));
+    }
+    return result.success;
+  }, []);
+
   const toggleTodo = useCallback(async (id: number) => {
     const updated = await electroview.rpc!.request.toggleTodo({ id });
     if (updated) {
       setTodos((prev) =>
-        prev.map((todo) => (todo.id === updated.id ? updated : todo)),
+        prev.map((todo) => (todo.id === updated.todo.id ? updated.todo : todo)),
       );
+      onPetStateChange?.(updated.pet);
     }
-    return updated;
-  }, []);
+    return updated?.todo ?? null;
+  }, [onPetStateChange]);
 
   return {
     todos,
@@ -51,6 +65,7 @@ export default function useTodos() {
     addTodo,
     updateTodo,
     deleteTodo,
+    removeTodo,
     toggleTodo,
   };
 }

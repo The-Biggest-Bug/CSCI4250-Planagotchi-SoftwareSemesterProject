@@ -10,8 +10,9 @@ import {
   resolveEggBackgroundImageUrl,
 } from "@/mainview/backgrounds";
 import type { PageName } from "@/mainview/types";
-import type { AppBackgroundDTO } from "@/shared/rpc";
+import type { AppBackgroundDTO, PetDTO } from "@/shared/rpc";
 import { electroview } from "@/shared/electrobun";
+import { getPetProgress, getDefaultPetState } from "@/types/pet";
 
 export default function App() {
   const [page, setPage] = useState<PageName>("home");
@@ -20,24 +21,34 @@ export default function App() {
   const [dinoBackground, setDinoBackground] = useState<AppBackgroundDTO>(
     DEFAULT_DINO_BACKGROUND,
   );
+  const [pet, setPet] = useState<PetDTO>(
+    getPetProgress(getDefaultPetState()),
+  );
 
   useEffect(() => {
     let cancelled = false;
 
     const loadAppSettings = async () => {
       try {
-        const result = await electroview.rpc!.request.getAppSettings({});
+        const [settings, petState] = await Promise.all([
+          electroview.rpc!.request.getAppSettings({}),
+          electroview.rpc!.request.getPetState({}),
+        ]);
         if (!cancelled) {
-          if (result?.eggColor) {
-            setEggFillColor(result.eggColor);
+          if (settings?.eggColor) {
+            setEggFillColor(settings.eggColor);
           }
 
-          if (result?.eggBackground) {
-            setEggBackground(result.eggBackground);
+          if (settings?.eggBackground) {
+            setEggBackground(settings.eggBackground);
           }
 
-          if (result?.dinoBackground) {
-            setDinoBackground(result.dinoBackground);
+          if (settings?.dinoBackground) {
+            setDinoBackground(settings.dinoBackground);
+          }
+
+          if (petState) {
+            setPet(petState);
           }
         }
       } catch {
@@ -84,6 +95,15 @@ export default function App() {
     }
   };
 
+  const handleResetAllData = async () => {
+    const result = await electroview.rpc!.request.resetAllData({});
+    setEggFillColor(result.appSettings.eggColor);
+    setEggBackground(result.appSettings.eggBackground);
+    setDinoBackground(result.appSettings.dinoBackground);
+    setPet(result.pet);
+    setPage("home");
+  };
+
   const eggBackgroundImageUrl = resolveEggBackgroundImageUrl(eggBackground);
   const dinoBackgroundImageUrl = resolveDinoBackgroundImageUrl(dinoBackground);
 
@@ -93,6 +113,7 @@ export default function App() {
       component: (
         <HomePage
           navigate={setPage}
+          pet={pet}
           eggFillColor={eggFillColor}
           eggBackgroundImageUrl={eggBackgroundImageUrl}
           dinoBackgroundImageUrl={dinoBackgroundImageUrl}
@@ -104,6 +125,7 @@ export default function App() {
       component: (
         <TasksPage
           navigate={setPage}
+          onPetStateChange={setPet}
           eggFillColor={eggFillColor}
           eggBackgroundImageUrl={eggBackgroundImageUrl}
         />
@@ -114,6 +136,7 @@ export default function App() {
       component: (
         <CalendarPage
           navigate={setPage}
+          onPetStateChange={setPet}
           eggFillColor={eggFillColor}
           eggBackgroundImageUrl={eggBackgroundImageUrl}
         />
@@ -132,6 +155,7 @@ export default function App() {
           onEggColorChange={handleEggColorChange}
           onEggBackgroundChange={handleEggBackgroundChange}
           onDinoBackgroundChange={handleDinoBackgroundChange}
+          onResetAllData={handleResetAllData}
         />
       ),
     },

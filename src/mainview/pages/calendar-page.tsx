@@ -14,13 +14,14 @@ import TodoList from "@/mainview/components/todo-list";
 import TaskDetailModal from "@/mainview/components/task-detail-modal";
 import EditTaskModal from "@/mainview/components/edit-task-modal";
 import type { ButtonConfig, Navigate } from "@/mainview/types";
-import type { TodoDTO } from "@/shared/rpc";
+import type { PetDTO, TodoDTO } from "@/shared/rpc";
 import useTodos from "@/mainview/hooks/use-todos";
 
 type CalendarMode = "week" | "month";
 
 interface CalendarPageProps {
   navigate: Navigate;
+  onPetStateChange: (pet: PetDTO) => void;
   eggFillColor: string;
   eggBackgroundImageUrl?: string;
 }
@@ -151,10 +152,13 @@ function withAlpha(color: string, alpha: number) {
 
 export default function CalendarPage({
   navigate,
+  onPetStateChange,
   eggFillColor,
   eggBackgroundImageUrl,
 }: CalendarPageProps) {
-  const { todos, loading, toggleTodo, updateTodo, deleteTodo } = useTodos();
+  const { todos, loading, toggleTodo, updateTodo, deleteTodo } = useTodos({
+    onPetStateChange,
+  });
   const [mode, setMode] = useState<CalendarMode>("week");
   const [focusDate, setFocusDate] = useState(() => startOfDay(new Date()));
   const [selectedDate, setSelectedDate] = useState(() =>

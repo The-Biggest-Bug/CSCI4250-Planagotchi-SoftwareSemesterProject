@@ -6,16 +6,21 @@ import {
 } from "@heroicons/react/24/solid";
 import Layout from "@/mainview/layout";
 import type { ButtonConfig, Navigate } from "@/mainview/types";
+import type { PetDTO } from "@/shared/rpc";
 
 interface HomePageProps {
   navigate: Navigate;
+  pet: PetDTO;
   eggFillColor: string;
   eggBackgroundImageUrl: string;
   dinoBackgroundImageUrl: string;
 }
 
+const EVOLUTION_LABELS = ["EGGIE", "LEGGIE", "STEGGIE"];
+
 export default function HomePage({
   navigate,
+  pet,
   eggFillColor,
   eggBackgroundImageUrl,
   dinoBackgroundImageUrl,
@@ -38,6 +43,12 @@ export default function HomePage({
     },
   ];
 
+  const progressPercent =
+    (pet.xpIntoCurrentEvolution / pet.xpForNextEvolution) * 100;
+  const evolutionLabel =
+    EVOLUTION_LABELS[pet.evolutionImageIndex] ??
+    `DINO ${pet.evolutionLevel + 1}`;
+
   return (
     <Layout
       buttons={buttons}
@@ -45,29 +56,41 @@ export default function HomePage({
       eggBackgroundImageUrl={eggBackgroundImageUrl}
       dinoBackgroundImageUrl={dinoBackgroundImageUrl}
     >
-      <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-        <div className="relative w-3/5 flex flex-col items-center justify-center gap-3">
-          <div className="flex justify-center">
-            <div className="inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 border border-white/20">
-              {Array.from({ length: 5 }).map((_, idx) => (
-                <HeartIcon key={idx} className="w-4 h-4 text-rose-400" />
-              ))}
-            </div>
-          </div>
+      <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
+        <div className="relative flex h-full w-full items-center justify-center px-3 py-2">
+          <div className="flex w-full max-w-[220px] flex-col items-center justify-center gap-2">
+            <div className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-black/60 px-2.5 py-1">
+              {Array.from({ length: pet.maxHealth }).map((_, idx) => {
+                const isFilled = idx < pet.health;
 
-          <div className="aspect-square flex flex-col items-center justify-center w-full gap-2">
+                return (
+                  <HeartIcon
+                    key={idx}
+                    className={`h-4 w-4 ${isFilled ? "text-rose-400" : "text-white/20"}`}
+                  />
+                );
+              })}
+            </div>
+
             <img
-              src="views://mainview/assets/dino/evolution0.png"
+              src={`views://mainview/assets/dino/evolution${pet.evolutionImageIndex}.png`}
               alt="pet"
-              className="w-4/5 h-4/5 object-contain drop-shadow-[0_6px_10px_rgba(0,0,0,0.9)]"
+              className="h-[122px] w-[122px] object-contain drop-shadow-[0_6px_10px_rgba(0,0,0,0.9)]"
               draggable={false}
             />
 
-            <div className="w-4/5 h-2 rounded-full bg-black/65 overflow-hidden border border-white/20 mt-2">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-emerald-500"
-                style={{ width: "70%" }}
-              />
+            <div className="w-full max-w-[164px] rounded-lg border border-white/15 bg-black/55 px-2.5 py-1.5">
+              <div className="mt-1.5 h-1.5 rounded-full border border-white/10 bg-black/65">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-emerald-500 transition-[width]"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+
+              <div className="mt-1 text-center text-[9px] uppercase tracking-[0.12em] text-white/75 whitespace-nowrap">
+                {evolutionLabel} • {pet.xpIntoCurrentEvolution}/
+                {pet.xpForNextEvolution}XP
+              </div>
             </div>
           </div>
         </div>

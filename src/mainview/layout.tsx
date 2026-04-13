@@ -100,15 +100,17 @@ export default function Layout({
             })}
           </div>
 
-          <Button
-            type="button"
-            variant="secondary"
-            aria-label="close app"
-            className={`h-9 w-16 ${buttonShellClass}`}
-            onClick={handleClose}
-          >
-            <PowerIcon className="h-4 w-4 text-foreground/70" />
-          </Button>
+          <div className="flex items-center justify-center gap-3">
+            <Button
+              type="button"
+              variant="secondary"
+              aria-label="close app"
+              className={`h-9 w-16 ${buttonShellClass}`}
+              onClick={handleClose}
+            >
+              <PowerIcon className="h-4 w-4 text-foreground/70" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

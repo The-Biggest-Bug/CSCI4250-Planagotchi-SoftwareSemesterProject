@@ -4,6 +4,7 @@ import { Utils } from "electrobun/bun";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import * as schema from "./schema";
+import { PET_INITIAL_HEALTH } from "../types/pet";
 
 const dbDir = Utils.paths.userData;
 mkdirSync(dbDir, { recursive: true });
@@ -16,7 +17,8 @@ sqlite.run(`
     completed INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
     description TEXT,
-    due_at INTEGER
+    due_at INTEGER,
+    penalty_applied_for_due_at INTEGER
   );
 `);
 
@@ -28,6 +30,12 @@ try {
 
 try {
   sqlite.run(`ALTER TABLE todos ADD COLUMN description TEXT`);
+} catch {
+  // column already exists
+}
+
+try {
+  sqlite.run(`ALTER TABLE todos ADD COLUMN penalty_applied_for_due_at INTEGER`);
 } catch {
   // column already exists
 }
@@ -48,6 +56,14 @@ sqlite.run(`
   CREATE TABLE IF NOT EXISTS notification_log (
     key TEXT PRIMARY KEY NOT NULL,
     sent_at INTEGER NOT NULL
+  );
+`);
+
+sqlite.run(`
+  CREATE TABLE IF NOT EXISTS pet_state (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    health INTEGER NOT NULL,
+    xp INTEGER NOT NULL DEFAULT 0
   );
 `);
 
@@ -140,6 +156,12 @@ sqlite.run(`
     'preset',
     'dino-landscape'
   WHERE NOT EXISTS (SELECT 1 FROM app_settings WHERE id = 1);
+`);
+
+sqlite.run(`
+  INSERT INTO pet_state (id, health, xp)
+  SELECT 1, ${PET_INITIAL_HEALTH}, 0
+  WHERE NOT EXISTS (SELECT 1 FROM pet_state WHERE id = 1);
 `);
 
 export const db = drizzle(sqlite, { schema });

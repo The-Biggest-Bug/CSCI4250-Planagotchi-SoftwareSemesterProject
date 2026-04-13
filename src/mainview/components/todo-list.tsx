@@ -1,4 +1,4 @@
-import { PencilSquareIcon } from "@heroicons/react/24/solid";
+import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { Checkbox } from "@/mainview/components/ui/checkbox";
 import type { TodoDTO } from "@/shared/rpc";
 
@@ -10,6 +10,7 @@ interface TodoListProps {
   emptyMessage?: string;
   onToggle: (id: number) => void;
   onSelect: (todo: TodoDTO) => void;
+  onQuickDelete?: (todo: TodoDTO) => void;
 }
 
 function formatDue(dueAt: string | null) {
@@ -25,6 +26,11 @@ function formatDue(dueAt: string | null) {
   return `${month} ${day}, ${h12}:${mins}${period}`;
 }
 
+function isOverdue(todo: TodoDTO) {
+  if (!todo.dueAt || todo.completed) return false;
+  return new Date(todo.dueAt).getTime() < Date.now();
+}
+
 export default function TodoList({
   todos,
   loading,
@@ -33,6 +39,7 @@ export default function TodoList({
   emptyMessage = "No tasks yet.",
   onToggle,
   onSelect,
+  onQuickDelete,
 }: TodoListProps) {
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
@@ -51,37 +58,58 @@ export default function TodoList({
             {emptyMessage}
           </div>
         )}
-        {todos.map((todo) => (
-          <div
-            key={todo.id}
-            className={`flex items-center gap-2 rounded-md px-1.5 py-1.5 text-sm cursor-pointer ${editMode ? "hover:bg-accent/60" : "hover:bg-muted/40"}`}
-            onClick={() => onSelect(todo)}
-          >
-            {editMode ? (
-              <PencilSquareIcon className="w-4 h-4 text-muted-foreground shrink-0" />
-            ) : (
-              <Checkbox
-                checked={todo.completed}
-                onCheckedChange={(e) => {
-                  e.valueOf();
-                  onToggle(todo.id);
-                }}
-                onClick={(e) => e.stopPropagation()}
-                className="h-3.5 w-3.5 shrink-0"
-              />
-            )}
-            <span
-              className={`flex-1 truncate ${todo.completed && !editMode ? "line-through text-muted-foreground" : ""}`}
+        {todos.map((todo) => {
+          const overdue = isOverdue(todo);
+
+          return (
+            <div
+              key={todo.id}
+              className={`flex items-center gap-2 rounded-md px-1.5 py-1.5 text-sm cursor-pointer ${editMode ? "hover:bg-accent/60" : "hover:bg-muted/40"}`}
+              onClick={() => onSelect(todo)}
             >
-              {todo.title}
-            </span>
-            {todo.dueAt && (
-              <span className="text-xs text-muted-foreground shrink-0">
-                {formatDue(todo.dueAt)}
+              {editMode ? (
+                <div className="flex items-center gap-1 shrink-0">
+                  <PencilSquareIcon className="w-4 h-4 text-muted-foreground" />
+                  {onQuickDelete ? (
+                    <button
+                      type="button"
+                      aria-label={`delete ${todo.title}`}
+                      className="rounded-sm p-0.5 text-rose-300 transition hover:bg-rose-400/10 hover:text-rose-200 electrobun-webkit-app-region-no-drag"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onQuickDelete(todo);
+                      }}
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  ) : null}
+                </div>
+              ) : (
+                <Checkbox
+                  checked={todo.completed}
+                  onCheckedChange={(e) => {
+                    e.valueOf();
+                    onToggle(todo.id);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-3.5 w-3.5 shrink-0"
+                />
+              )}
+              <span
+                className={`flex-1 truncate ${todo.completed && !editMode ? "line-through text-muted-foreground" : ""} ${overdue ? "text-rose-300" : ""}`}
+              >
+                {todo.title}
               </span>
-            )}
-          </div>
-        ))}
+              {todo.dueAt && (
+                <span
+                  className={`text-xs shrink-0 ${overdue ? "text-rose-300" : "text-muted-foreground"}`}
+                >
+                  {formatDue(todo.dueAt)}
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

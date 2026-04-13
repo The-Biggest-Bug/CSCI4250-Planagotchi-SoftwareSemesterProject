@@ -8,14 +8,24 @@ import {
 import { desc, eq } from "drizzle-orm";
 import config from "../../electrobun.config";
 import { db } from "../db/client";
-import { todos, appSettings } from "../db/schema";
+import { todos, appSettings, notificationLog, petState } from "../db/schema";
 import type {
   AppBackgroundDTO,
   AppSettingsDTO,
   MainViewRPC,
+  PetDTO,
   TodoDTO,
 } from "../shared/rpc";
-import { initNotifications, rescheduleNotifications } from "./notifications";
+import {
+  getDefaultPetState,
+  getPetProgress,
+  penalizePetForMissedTask,
+  rewardPetForCompletedTask,
+} from "../types/pet";
+import {
+  initNotifications,
+  rescheduleNotifications,
+} from "./notifications";
 
 const APP_NAME = config.app.name;
 const DEV_SERVER_PORT = 5173;
@@ -47,6 +57,13 @@ function mapTodo(row: typeof todos.$inferSelect): TodoDTO {
     createdAt: new Date(row.createdAt).toISOString(),
     dueAt: row.dueAt ? new Date(row.dueAt).toISOString() : null,
   };
+}
+
+function mapPet(row: typeof petState.$inferSelect): PetDTO {
+  return getPetProgress({
+    health: row.health,
+    xp: row.xp,
+  });
 }
 
 const DEFAULT_EGG_COLOR = "#CAF0FE";
@@ -103,10 +120,79 @@ async function getOrCreateAppSettings() {
   return inserted;
 }
 
+async function getOrCreatePetState() {
+  const [existing] = await db.select().from(petState).limit(1);
+  if (existing) {
+    return existing;
+  }
+
+  const defaults = getDefaultPetState();
+  const [inserted] = await db
+    .insert(petState)
+    .values({
+      health: defaults.health,
+      xp: defaults.xp,
+    })
+    .returning();
+
+  return inserted;
+}
+
+function hasMissedDueDate(
+  todo: typeof todos.$inferSelect,
+  now: Date,
+): todo is typeof todo & { dueAt: Date } {
+  return (
+    !todo.completed &&
+    !!todo.dueAt &&
+    todo.dueAt.getTime() < now.getTime() &&
+    todo.penaltyAppliedForDueAt?.getTime() !== todo.dueAt.getTime()
+  );
+}
+
+async function applyMissedTaskPenalties(now = new Date()) {
+  const currentPet = await getOrCreatePetState();
+  const overdueTodos = (await db.select().from(todos)).filter((todo) =>
+    hasMissedDueDate(todo, now),
+  );
+
+  if (overdueTodos.length === 0) {
+    return currentPet;
+  }
+
+  let nextPet = currentPet;
+
+  for (const todo of overdueTodos) {
+    const penalizedPet = penalizePetForMissedTask({
+      health: nextPet.health,
+      xp: nextPet.xp,
+    });
+
+    [nextPet] = await db
+      .update(petState)
+      .set({
+        health: penalizedPet.health,
+        xp: penalizedPet.xp,
+      })
+      .where(eq(petState.id, nextPet.id))
+      .returning();
+
+    await db
+      .update(todos)
+      .set({
+        penaltyAppliedForDueAt: todo.dueAt,
+      })
+      .where(eq(todos.id, todo.id));
+  }
+
+  return nextPet;
+}
+
 const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
   handlers: {
     requests: {
       listTodos: async () => {
+        await applyMissedTaskPenalties();
         const rows = await db
           .select()
           .from(todos)
@@ -140,6 +226,7 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
         return updated ? mapTodo(updated) : null;
       },
       toggleTodo: async ({ id }) => {
+        let nextPet = await applyMissedTaskPenalties();
         const [existing] = await db
           .select()
           .from(todos)
@@ -147,18 +234,43 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
           .limit(1);
         if (!existing) return null;
 
+        const nextCompleted = !existing.completed;
         const [updated] = await db
           .update(todos)
-          .set({ completed: !existing.completed })
+          .set({ completed: nextCompleted })
           .where(eq(todos.id, id))
           .returning();
+
+        if (!existing.completed && nextCompleted) {
+          const rewardedPet = rewardPetForCompletedTask({
+            health: nextPet.health,
+            xp: nextPet.xp,
+          });
+
+          [nextPet] = await db
+            .update(petState)
+            .set({
+              health: rewardedPet.health,
+              xp: rewardedPet.xp,
+            })
+            .where(eq(petState.id, nextPet.id))
+            .returning();
+        }
+
         await rescheduleNotifications();
-        return mapTodo(updated);
+        return {
+          todo: mapTodo(updated),
+          pet: mapPet(nextPet),
+        };
       },
       deleteTodo: async ({ id }) => {
         await db.delete(todos).where(eq(todos.id, id));
         await rescheduleNotifications();
         return { success: true };
+      },
+      getPetState: async () => {
+        const pet = await applyMissedTaskPenalties();
+        return mapPet(pet);
       },
       getAppSettings: async () => {
         const settings = await getOrCreateAppSettings();
@@ -218,6 +330,23 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
       closeApp: async () => {
         mainWindow.close();
         return { success: true };
+      },
+      resetAllData: async () => {
+        await db.delete(todos);
+        await db.delete(notificationLog);
+        await db.delete(appSettings);
+        await db.delete(petState);
+
+        const settings = await getOrCreateAppSettings();
+        const pet = await getOrCreatePetState();
+
+        await rescheduleNotifications();
+
+        return {
+          success: true,
+          appSettings: mapAppSettings(settings),
+          pet: mapPet(pet),
+        };
       },
     },
     messages: {},
