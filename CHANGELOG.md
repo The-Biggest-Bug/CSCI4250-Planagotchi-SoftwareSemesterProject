@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.3.0...planagotchi-v1.4.0) (2026-04-13)
+
+
+### Features
+
+* add pet health, xp, and evolution system. ([#21](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/issues/21)) ([5ebec8b](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/5ebec8b7a90ba5046f989458b014762fdf87db59))
+
 ## [1.3.0](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.2.0...planagotchi-v1.3.0) (2026-04-01)
 
 
