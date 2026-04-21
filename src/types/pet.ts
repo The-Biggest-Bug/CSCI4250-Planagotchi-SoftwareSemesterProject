@@ -3,11 +3,21 @@ export const PET_INITIAL_HEALTH = Math.ceil(PET_MAX_HEALTH / 2);
 export const PET_XP_PER_TASK = 20;
 export const PET_HEALTH_LOSS_PER_MISSED_TASK = 2;
 export const PET_XP_PER_EVOLUTION = 100;
-export const PET_MAX_EVOLUTION_IMAGE_INDEX = 2;
+export const PET_MAX_EVOLUTION_IMAGE_INDEX = 3;
+export const PET_IDLE_MOOD_THRESHOLD = 70;
+export const PET_SAD_MOOD_THRESHOLD = 40;
+
+export type PetMood = "idle" | "sad" | "angry";
 
 export interface StoredPetState {
   health: number;
   xp: number;
+}
+
+export interface ProductivitySnapshot {
+  totalTodos: number;
+  completedTodos: number;
+  overdueTodos: number;
 }
 
 export interface PetProgress {
@@ -18,6 +28,8 @@ export interface PetProgress {
   evolutionImageIndex: number;
   xpIntoCurrentEvolution: number;
   xpForNextEvolution: number;
+  mood: PetMood;
+  productivityScore: number;
 }
 
 export function getDefaultPetState(): StoredPetState {
@@ -43,7 +55,59 @@ export function getXpIntoCurrentEvolution(xp: number) {
   return Math.max(0, xp % PET_XP_PER_EVOLUTION);
 }
 
-export function getPetProgress(pet: StoredPetState): PetProgress {
+function clampUnit(value: number) {
+  return Math.max(0, Math.min(1, value));
+}
+
+function getProductivityScore(
+  pet: StoredPetState,
+  productivity: ProductivitySnapshot,
+) {
+  const totalTodos = Math.max(0, Math.round(productivity.totalTodos));
+  const completedTodos = Math.max(
+    0,
+    Math.min(totalTodos, Math.round(productivity.completedTodos)),
+  );
+  const overdueTodos = Math.max(
+    0,
+    Math.min(totalTodos, Math.round(productivity.overdueTodos)),
+  );
+  const healthRatio = clampUnit(clampPetHealth(pet.health) / PET_MAX_HEALTH);
+
+  if (totalTodos === 0) {
+    return Math.round((0.7 + healthRatio * 0.3) * 100);
+  }
+
+  const completionRatio = completedTodos / totalTodos;
+  const overdueRatio = overdueTodos / totalTodos;
+  const score =
+    completionRatio * 0.45 + (1 - overdueRatio) * 0.35 + healthRatio * 0.2;
+
+  return Math.round(clampUnit(score) * 100);
+}
+
+export function getPetMood(productivityScore: number): PetMood {
+  if (productivityScore >= PET_IDLE_MOOD_THRESHOLD) {
+    return "idle";
+  }
+
+  if (productivityScore >= PET_SAD_MOOD_THRESHOLD) {
+    return "sad";
+  }
+
+  return "angry";
+}
+
+export function getPetProgress(
+  pet: StoredPetState,
+  productivity: ProductivitySnapshot = {
+    totalTodos: 0,
+    completedTodos: 0,
+    overdueTodos: 0,
+  },
+): PetProgress {
+  const productivityScore = getProductivityScore(pet, productivity);
+
   return {
     health: clampPetHealth(pet.health),
     maxHealth: PET_MAX_HEALTH,
@@ -52,6 +116,8 @@ export function getPetProgress(pet: StoredPetState): PetProgress {
     evolutionImageIndex: getEvolutionImageIndex(pet.xp),
     xpIntoCurrentEvolution: getXpIntoCurrentEvolution(pet.xp),
     xpForNextEvolution: PET_XP_PER_EVOLUTION,
+    mood: getPetMood(productivityScore),
+    productivityScore,
   };
 }
 

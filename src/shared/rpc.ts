@@ -1,4 +1,5 @@
 export type RPCSchema<T> = T;
+export type PetMoodDTO = "idle" | "sad" | "angry";
 
 export interface TodoDTO {
   id: number;
@@ -30,6 +31,8 @@ export interface PetDTO {
   evolutionImageIndex: number;
   xpIntoCurrentEvolution: number;
   xpForNextEvolution: number;
+  mood: PetMoodDTO;
+  productivityScore: number;
 }
 
 export type MainViewRPC = {
