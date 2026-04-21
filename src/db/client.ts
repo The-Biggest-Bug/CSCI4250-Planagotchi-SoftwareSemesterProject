@@ -15,6 +15,7 @@ sqlite.run(`
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     title TEXT NOT NULL,
     completed INTEGER NOT NULL DEFAULT 0,
+    completed_at INTEGER,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
     description TEXT,
     due_at INTEGER,
@@ -35,6 +36,12 @@ try {
 }
 
 try {
+  sqlite.run(`ALTER TABLE todos ADD COLUMN completed_at INTEGER`);
+} catch {
+  // column already exists
+}
+
+try {
   sqlite.run(`ALTER TABLE todos ADD COLUMN penalty_applied_for_due_at INTEGER`);
 } catch {
   // column already exists
@@ -48,7 +55,8 @@ sqlite.run(`
     background_value TEXT NOT NULL DEFAULT 'egg-triangles',
     egg_background_value TEXT NOT NULL DEFAULT 'egg-triangles',
     dino_background_kind TEXT NOT NULL DEFAULT 'preset',
-    dino_background_value TEXT NOT NULL DEFAULT 'dino-landscape'
+    dino_background_value TEXT NOT NULL DEFAULT 'dino-landscape',
+    hard_mode INTEGER NOT NULL DEFAULT 0
   );
 `);
 
@@ -107,6 +115,20 @@ try {
   // column already exists
 }
 
+try {
+  sqlite.run(
+    `ALTER TABLE app_settings ADD COLUMN hard_mode INTEGER NOT NULL DEFAULT 0`,
+  );
+} catch {
+  // column already exists
+}
+
+sqlite.run(`
+  UPDATE app_settings
+  SET hard_mode = 0
+  WHERE hard_mode IS NULL;
+`);
+
 sqlite.run(`
   UPDATE app_settings
   SET background_kind = 'preset'
@@ -145,7 +167,8 @@ sqlite.run(`
     background_value,
     egg_background_value,
     dino_background_kind,
-    dino_background_value
+    dino_background_value,
+    hard_mode
   )
   SELECT
     1,
@@ -154,7 +177,8 @@ sqlite.run(`
     'egg-triangles',
     'egg-triangles',
     'preset',
-    'dino-landscape'
+    'dino-landscape',
+    0
   WHERE NOT EXISTS (SELECT 1 FROM app_settings WHERE id = 1);
 `);
 

@@ -25,6 +25,7 @@ export const appSettings = sqliteTable("app_settings", {
   dinoBackgroundValue: text("dino_background_value")
     .notNull()
     .default("dino-landscape"),
+  hardMode: integer("hard_mode", { mode: "boolean" }).notNull().default(false),
 });
 
 export const notificationLog = sqliteTable("notification_log", {

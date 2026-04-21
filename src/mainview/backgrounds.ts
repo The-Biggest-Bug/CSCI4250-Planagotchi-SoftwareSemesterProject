@@ -21,26 +21,26 @@ export const EGG_BACKGROUND_OPTIONS: BackgroundOption[] = [
   },
 ];
 
-export const DINO_BACKGROUND_OPTIONS: BackgroundOption[] = [
+export const PET_BACKGROUND_OPTIONS: BackgroundOption[] = [
   {
     id: "dino-landscape",
     label: "Landscape",
-    imageUrl: `${ASSET_ROOT}/dino-bg/landscape.webp`,
+    imageUrl: `${ASSET_ROOT}/pet-bg/landscape.webp`,
   },
   {
     id: "dino-lavender",
     label: "Lavender",
-    imageUrl: `${ASSET_ROOT}/dino-bg/lavender.webp`,
+    imageUrl: `${ASSET_ROOT}/pet-bg/lavender.webp`,
   },
   {
     id: "dino-slimes",
     label: "Slimes",
-    imageUrl: `${ASSET_ROOT}/dino-bg/slimes.webp`,
+    imageUrl: `${ASSET_ROOT}/pet-bg/slimes.webp`,
   },
 ];
 
 export const DEFAULT_EGG_BACKGROUND = "egg-triangles";
-export const DEFAULT_DINO_BACKGROUND: AppBackgroundDTO = {
+export const DEFAULT_PET_BACKGROUND: AppBackgroundDTO = {
   kind: "preset",
   value: "dino-landscape",
 };
@@ -48,8 +48,8 @@ export const DEFAULT_DINO_BACKGROUND: AppBackgroundDTO = {
 const eggBackgroundMap = new Map(
   EGG_BACKGROUND_OPTIONS.map((option) => [option.id, option]),
 );
-const dinoBackgroundMap = new Map(
-  DINO_BACKGROUND_OPTIONS.map((option) => [option.id, option]),
+const petBackgroundMap = new Map(
+  PET_BACKGROUND_OPTIONS.map((option) => [option.id, option]),
 );
 
 export function resolveEggBackgroundImageUrl(
@@ -63,15 +63,15 @@ export function resolveEggBackgroundImageUrl(
   );
 }
 
-export function resolveDinoBackgroundImageUrl(
-  dinoBackground: AppBackgroundDTO | null | undefined,
+export function resolvePetBackgroundImageUrl(
+  petBackground: AppBackgroundDTO | null | undefined,
 ) {
-  if (dinoBackground?.kind === "custom" && dinoBackground.value) {
-    return dinoBackground.value;
+  if (petBackground?.kind === "custom" && petBackground.value) {
+    return petBackground.value;
   }
 
   return (
-    dinoBackgroundMap.get(dinoBackground?.value || "")?.imageUrl ||
-    dinoBackgroundMap.get(DEFAULT_DINO_BACKGROUND.value)!.imageUrl
+    petBackgroundMap.get(petBackground?.value || "")?.imageUrl ||
+    petBackgroundMap.get(DEFAULT_PET_BACKGROUND.value)!.imageUrl
   );
 }

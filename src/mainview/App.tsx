@@ -4,9 +4,9 @@ import TasksPage from "@/mainview/pages/tasks-page";
 import CalendarPage from "@/mainview/pages/calendar-page";
 import SettingsPage from "@/mainview/pages/settings-page";
 import {
-  DEFAULT_DINO_BACKGROUND,
+  DEFAULT_PET_BACKGROUND,
   DEFAULT_EGG_BACKGROUND,
-  resolveDinoBackgroundImageUrl,
+  resolvePetBackgroundImageUrl,
   resolveEggBackgroundImageUrl,
 } from "@/mainview/backgrounds";
 import type { PageName } from "@/mainview/types";
@@ -18,12 +18,11 @@ export default function App() {
   const [page, setPage] = useState<PageName>("home");
   const [eggFillColor, setEggFillColor] = useState("#CAF0FE");
   const [eggBackground, setEggBackground] = useState(DEFAULT_EGG_BACKGROUND);
-  const [dinoBackground, setDinoBackground] = useState<AppBackgroundDTO>(
-    DEFAULT_DINO_BACKGROUND,
+  const [petBackground, setPetBackground] = useState<AppBackgroundDTO>(
+    DEFAULT_PET_BACKGROUND,
   );
-  const [pet, setPet] = useState<PetDTO>(
-    getPetProgress(getDefaultPetState()),
-  );
+  const [hardMode, setHardMode] = useState(false);
+  const [pet, setPet] = useState<PetDTO>(getPetProgress(getDefaultPetState()));
 
   useEffect(() => {
     let cancelled = false;
@@ -40,8 +39,12 @@ export default function App() {
             setEggBackground(settings.eggBackground);
           }
 
-          if (settings?.dinoBackground) {
-            setDinoBackground(settings.dinoBackground);
+          if (settings?.petBackground) {
+            setPetBackground(settings.petBackground);
+          }
+
+          if (typeof settings?.hardMode === "boolean") {
+            setHardMode(settings.hardMode);
           }
         }
       } catch {
@@ -100,14 +103,28 @@ export default function App() {
     }
   };
 
-  const handleDinoBackgroundChange = async (
+  const handlePetBackgroundChange = async (
     nextBackground: AppBackgroundDTO,
   ) => {
-    setDinoBackground(nextBackground);
+    setPetBackground(nextBackground);
     try {
       const saved =
-        await electroview.rpc!.request.setDinoBackground(nextBackground);
-      setDinoBackground(saved);
+        await electroview.rpc!.request.setPetBackground(nextBackground);
+      setPetBackground(saved);
+    } catch {
+      // ignore persistence errors; UI will still reflect local change
+    }
+  };
+
+  const handleHardModeChange = async (enabled: boolean) => {
+    setHardMode(enabled);
+    try {
+      const saved = await electroview.rpc!.request.setHardMode({ enabled });
+      setHardMode(saved.enabled);
+      const nextPet = await electroview.rpc!.request.getPetState({});
+      if (nextPet) {
+        setPet(nextPet);
+      }
     } catch {
       // ignore persistence errors; UI will still reflect local change
     }
@@ -117,13 +134,14 @@ export default function App() {
     const result = await electroview.rpc!.request.resetAllData({});
     setEggFillColor(result.appSettings.eggColor);
     setEggBackground(result.appSettings.eggBackground);
-    setDinoBackground(result.appSettings.dinoBackground);
+    setPetBackground(result.appSettings.petBackground);
+    setHardMode(result.appSettings.hardMode);
     setPet(result.pet);
     setPage("home");
   };
 
   const eggBackgroundImageUrl = resolveEggBackgroundImageUrl(eggBackground);
-  const dinoBackgroundImageUrl = resolveDinoBackgroundImageUrl(dinoBackground);
+  const petBackgroundImageUrl = resolvePetBackgroundImageUrl(petBackground);
 
   const pages = [
     {
@@ -134,7 +152,7 @@ export default function App() {
           pet={pet}
           eggFillColor={eggFillColor}
           eggBackgroundImageUrl={eggBackgroundImageUrl}
-          dinoBackgroundImageUrl={dinoBackgroundImageUrl}
+          petBackgroundImageUrl={petBackgroundImageUrl}
         />
       ),
     },
@@ -168,12 +186,14 @@ export default function App() {
           eggFillColor={eggFillColor}
           eggBackground={eggBackground}
           eggBackgroundImageUrl={eggBackgroundImageUrl}
-          dinoBackground={dinoBackground}
-          dinoBackgroundImageUrl={dinoBackgroundImageUrl}
+          petBackground={petBackground}
+          petBackgroundImageUrl={petBackgroundImageUrl}
           onEggColorChange={handleEggColorChange}
           onEggBackgroundChange={handleEggBackgroundChange}
-          onDinoBackgroundChange={handleDinoBackgroundChange}
+          onPetBackgroundChange={handlePetBackgroundChange}
           onResetAllData={handleResetAllData}
+          hardMode={hardMode}
+          onHardModeChange={handleHardModeChange}
         />
       ),
     },

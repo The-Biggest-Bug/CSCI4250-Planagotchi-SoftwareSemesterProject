@@ -30,8 +30,7 @@ export default function TasksPage({
     deleteTodo,
     removeTodo,
     toggleTodo,
-  } =
-    useTodos({ onPetStateChange });
+  } = useTodos({ onPetStateChange });
   const [showCreate, setShowCreate] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editingTodo, setEditingTodo] = useState<TodoDTO | null>(null);

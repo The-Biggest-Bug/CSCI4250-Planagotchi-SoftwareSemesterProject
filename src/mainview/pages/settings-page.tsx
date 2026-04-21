@@ -8,11 +8,12 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import {
-  DINO_BACKGROUND_OPTIONS,
+  PET_BACKGROUND_OPTIONS,
   EGG_BACKGROUND_OPTIONS,
 } from "@/mainview/backgrounds";
 import type { ButtonConfig, Navigate } from "@/mainview/types";
 import type { AppBackgroundDTO } from "@/shared/rpc";
+import { Checkbox } from "@/mainview/components/ui/checkbox";
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 const MAX_IMAGE_EDGE = 1024;
@@ -56,19 +57,21 @@ async function fileToBackgroundDataUrl(file: File) {
   }
 }
 
-type ActivePicker = "egg" | "dino" | null;
+type ActivePicker = "egg" | "pet" | null;
 
 interface SettingsPageProps {
   navigate: Navigate;
   eggFillColor: string;
   eggBackground: string;
   eggBackgroundImageUrl: string;
-  dinoBackground: AppBackgroundDTO;
-  dinoBackgroundImageUrl: string;
+  petBackground: AppBackgroundDTO;
+  petBackgroundImageUrl: string;
   onEggColorChange: (color: string) => void;
   onEggBackgroundChange: (value: string) => Promise<void>;
-  onDinoBackgroundChange: (background: AppBackgroundDTO) => Promise<void>;
+  onPetBackgroundChange: (background: AppBackgroundDTO) => Promise<void>;
   onResetAllData: () => Promise<void>;
+  hardMode: boolean;
+  onHardModeChange: (enabled: boolean) => Promise<void>;
 }
 
 function SettingsRow({
@@ -121,7 +124,7 @@ function BackgroundButton({
       className="flex min-w-0 flex-1 flex-col text-left transition opacity-90 hover:opacity-100 electrobun-webkit-app-region-no-drag"
     >
       <div
-        className="h-14 w-full rounded-lg bg-cover bg-center"
+        className="h-12 w-full rounded-lg bg-cover bg-center"
         style={{ backgroundImage: `url("${imageUrl}")` }}
       />
     </button>
@@ -201,15 +204,17 @@ export default function SettingsPage({
   eggFillColor,
   eggBackground,
   eggBackgroundImageUrl,
-  dinoBackground,
-  dinoBackgroundImageUrl,
+  petBackground,
+  petBackgroundImageUrl,
   onEggColorChange,
   onEggBackgroundChange,
-  onDinoBackgroundChange,
+  onPetBackgroundChange,
   onResetAllData,
+  hardMode,
+  onHardModeChange,
 }: SettingsPageProps) {
   const eggFileInputRef = useRef<HTMLInputElement>(null);
-  const dinoFileInputRef = useRef<HTMLInputElement>(null);
+  const petFileInputRef = useRef<HTMLInputElement>(null);
   const [activePicker, setActivePicker] = useState<ActivePicker>(null);
   const [eggUploadError, setEggUploadError] = useState<string | null>(null);
   const [eggIsUploading, setEggIsUploading] = useState(false);
@@ -233,9 +238,9 @@ export default function SettingsPage({
     setActivePicker(null);
   };
 
-  const handleDinoBackgroundSelect = async (value: string) => {
+  const handlePetBackgroundSelect = async (value: string) => {
     setDinoUploadError(null);
-    await onDinoBackgroundChange({ kind: "preset", value });
+    await onPetBackgroundChange({ kind: "preset", value });
     setActivePicker(null);
   };
 
@@ -264,7 +269,7 @@ export default function SettingsPage({
     }
   };
 
-  const handleDinoCustomUpload = async (
+  const handlePetCustomUpload = async (
     event: ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
@@ -276,7 +281,7 @@ export default function SettingsPage({
 
     try {
       const value = await fileToBackgroundDataUrl(file);
-      await onDinoBackgroundChange({ kind: "custom", value });
+      await onPetBackgroundChange({ kind: "custom", value });
       setActivePicker(null);
     } catch (error) {
       setDinoUploadError(
@@ -309,53 +314,68 @@ export default function SettingsPage({
       eggBackgroundImageUrl={eggBackgroundImageUrl}
     >
       <div className="relative h-full w-full overflow-hidden px-2 py-2.5">
-        <div className="flex flex-col gap-1.5">
+        <div className="flex h-full min-h-0 flex-col gap-1">
           <h2 className="px-1 text-base font-semibold text-white">Settings</h2>
 
           <SettingsRow
-            label="Egg color"
+            label="Hard mode"
             control={
-              <label className="relative h-7 w-7 shrink-0 cursor-pointer electrobun-webkit-app-region-no-drag">
-                <span
-                  className="absolute inset-0 rounded-full border border-white/30"
-                  style={{ backgroundColor: eggFillColor }}
-                />
-                <input
-                  type="color"
-                  value={eggFillColor}
-                  onChange={(event) => onEggColorChange(event.target.value)}
-                  className="absolute inset-0 cursor-pointer opacity-0"
-                  aria-label="egg color"
-                />
-              </label>
+              <Checkbox
+                checked={hardMode}
+                onCheckedChange={(value) =>
+                  void onHardModeChange(value === true)
+                }
+                aria-label="hard mode"
+              />
             }
           />
 
-          <div className="w-full px-1 electrobun-webkit-app-region-no-drag">
-            <div className="mb-1 text-sm font-medium text-white">
-              Backgrounds
-            </div>
-            <div className="flex gap-2">
-              <BackgroundButton
-                imageUrl={eggBackgroundImageUrl}
-                onClick={() => setActivePicker("egg")}
-              />
-              <BackgroundButton
-                imageUrl={dinoBackgroundImageUrl}
-                onClick={() => setActivePicker("dino")}
-              />
-            </div>
-          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto pr-0.5">
+            <SettingsRow
+              label="Egg color"
+              control={
+                <label className="relative h-7 w-7 shrink-0 cursor-pointer electrobun-webkit-app-region-no-drag">
+                  <span
+                    className="absolute inset-0 rounded-full border border-white/30"
+                    style={{ backgroundColor: eggFillColor }}
+                  />
+                  <input
+                    type="color"
+                    value={eggFillColor}
+                    onChange={(event) => onEggColorChange(event.target.value)}
+                    className="absolute inset-0 cursor-pointer opacity-0"
+                    aria-label="egg color"
+                  />
+                </label>
+              }
+            />
 
-          <div className="px-1 electrobun-webkit-app-region-no-drag">
-            <button
-              type="button"
-              onClick={() => setShowResetModal(true)}
-              disabled={isResetting}
-              className="w-full rounded-xl border border-rose-400/40 bg-rose-500/10 px-3 py-2 text-left text-sm font-medium text-rose-200 transition hover:bg-rose-500/20 disabled:cursor-wait disabled:opacity-60"
-            >
-              Reset all data
-            </button>
+            <div className="w-full px-1 electrobun-webkit-app-region-no-drag">
+              <div className="mb-0.5 text-sm font-medium text-white">
+                Backgrounds
+              </div>
+              <div className="flex gap-2 pb-1">
+                <BackgroundButton
+                  imageUrl={eggBackgroundImageUrl}
+                  onClick={() => setActivePicker("egg")}
+                />
+                <BackgroundButton
+                  imageUrl={petBackgroundImageUrl}
+                  onClick={() => setActivePicker("pet")}
+                />
+              </div>
+            </div>
+
+            <div className="px-1 mt-0.5 electrobun-webkit-app-region-no-drag">
+              <button
+                type="button"
+                onClick={() => setShowResetModal(true)}
+                disabled={isResetting}
+                className="w-full rounded-xl border border-rose-400/40 bg-rose-500/10 px-3 py-1 text-left text-sm font-medium text-rose-200 transition hover:bg-rose-500/20 disabled:cursor-wait disabled:opacity-60"
+              >
+                Reset all data
+              </button>
+            </div>
           </div>
         </div>
 
@@ -429,18 +449,18 @@ export default function SettingsPage({
           </PickerModal>
         ) : null}
 
-        {activePicker === "dino" ? (
+        {activePicker === "pet" ? (
           <PickerModal
-            title="Dino Background"
+            title="Pet Background"
             onClose={() => setActivePicker(null)}
           >
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => dinoFileInputRef.current?.click()}
+                onClick={() => petFileInputRef.current?.click()}
                 disabled={dinoIsUploading}
                 className={`rounded-xl border p-1 text-left transition electrobun-webkit-app-region-no-drag ${
-                  dinoBackground.kind === "custom"
+                  petBackground.kind === "custom"
                     ? "border-sky-300 bg-sky-200/20 shadow-[0_0_0_1px_rgba(125,211,252,0.6)]"
                     : "border-white/15 bg-black/30 hover:bg-white/10"
                 }`}
@@ -448,8 +468,8 @@ export default function SettingsPage({
                 <div
                   className="relative h-14 rounded-lg bg-cover bg-center bg-black/20 flex items-center justify-center"
                   style={
-                    dinoBackground.kind === "custom"
-                      ? { backgroundImage: `url("${dinoBackgroundImageUrl}")` }
+                    petBackground.kind === "custom"
+                      ? { backgroundImage: `url("${petBackgroundImageUrl}")` }
                       : undefined
                   }
                 >
@@ -462,15 +482,15 @@ export default function SettingsPage({
                 </div>
               </button>
 
-              {DINO_BACKGROUND_OPTIONS.map((option) => {
+              {PET_BACKGROUND_OPTIONS.map((option) => {
                 const isSelected =
-                  dinoBackground.kind === "preset" &&
-                  dinoBackground.value === option.id;
+                  petBackground.kind === "preset" &&
+                  petBackground.value === option.id;
                 return (
                   <button
                     key={option.id}
                     type="button"
-                    onClick={() => void handleDinoBackgroundSelect(option.id)}
+                    onClick={() => void handlePetBackgroundSelect(option.id)}
                     className={`rounded-xl border p-1 text-left transition electrobun-webkit-app-region-no-drag ${
                       isSelected
                         ? "border-sky-300 bg-sky-200/20 shadow-[0_0_0_1px_rgba(125,211,252,0.6)]"
@@ -486,11 +506,11 @@ export default function SettingsPage({
               })}
 
               <input
-                ref={dinoFileInputRef}
+                ref={petFileInputRef}
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={handleDinoCustomUpload}
+                onChange={handlePetCustomUpload}
               />
             </div>
             {dinoUploadError ? (

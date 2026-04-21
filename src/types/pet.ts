@@ -8,6 +8,7 @@ export const PET_IDLE_MOOD_THRESHOLD = 70;
 export const PET_SAD_MOOD_THRESHOLD = 40;
 
 export type PetMood = "idle" | "sad" | "angry";
+export type PetKind = "dino" | "hamster";
 
 export interface StoredPetState {
   health: number;
@@ -21,6 +22,7 @@ export interface ProductivitySnapshot {
 }
 
 export interface PetProgress {
+  kind: PetKind;
   health: number;
   maxHealth: number;
   xp: number;
@@ -30,6 +32,7 @@ export interface PetProgress {
   xpForNextEvolution: number;
   mood: PetMood;
   productivityScore: number;
+  streakDays: number;
 }
 
 export function getDefaultPetState(): StoredPetState {
@@ -109,6 +112,7 @@ export function getPetProgress(
   const productivityScore = getProductivityScore(pet, productivity);
 
   return {
+    kind: "dino",
     health: clampPetHealth(pet.health),
     maxHealth: PET_MAX_HEALTH,
     xp: Math.max(0, pet.xp),
@@ -118,6 +122,38 @@ export function getPetProgress(
     xpForNextEvolution: PET_XP_PER_EVOLUTION,
     mood: getPetMood(productivityScore),
     productivityScore,
+    streakDays: 0,
+  };
+}
+
+export function getHamsterProgress(
+  pet: StoredPetState,
+  productivity: ProductivitySnapshot = {
+    totalTodos: 0,
+    completedTodos: 0,
+    overdueTodos: 0,
+  },
+): PetProgress {
+  const totalTodos = Math.max(0, Math.round(productivity.totalTodos));
+  const completedTodos = Math.max(
+    0,
+    Math.min(totalTodos, Math.round(productivity.completedTodos)),
+  );
+  const completionScore =
+    totalTodos === 0 ? 100 : Math.round((completedTodos / totalTodos) * 100);
+
+  return {
+    kind: "hamster",
+    health: Math.max(0, Math.min(1, Math.round(pet.health))),
+    maxHealth: 1,
+    xp: 0,
+    evolutionLevel: 0,
+    evolutionImageIndex: 0,
+    xpIntoCurrentEvolution: 0,
+    xpForNextEvolution: 1,
+    mood: "idle",
+    productivityScore: Math.max(0, Math.min(100, completionScore)),
+    streakDays: 0,
   };
 }
 
