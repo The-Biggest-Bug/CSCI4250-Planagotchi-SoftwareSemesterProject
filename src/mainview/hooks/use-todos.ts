@@ -47,16 +47,21 @@ export default function useTodos(options: UseTodosOptions = {}) {
     return result.success;
   }, []);
 
-  const toggleTodo = useCallback(async (id: number) => {
-    const updated = await electroview.rpc!.request.toggleTodo({ id });
-    if (updated) {
-      setTodos((prev) =>
-        prev.map((todo) => (todo.id === updated.todo.id ? updated.todo : todo)),
-      );
-      onPetStateChange?.(updated.pet);
-    }
-    return updated?.todo ?? null;
-  }, [onPetStateChange]);
+  const toggleTodo = useCallback(
+    async (id: number) => {
+      const updated = await electroview.rpc!.request.toggleTodo({ id });
+      if (updated) {
+        setTodos((prev) =>
+          prev.map((todo) =>
+            todo.id === updated.todo.id ? updated.todo : todo,
+          ),
+        );
+        onPetStateChange?.(updated.pet);
+      }
+      return updated?.todo ?? null;
+    },
+    [onPetStateChange],
+  );
 
   return {
     todos,

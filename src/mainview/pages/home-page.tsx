@@ -13,7 +13,7 @@ interface HomePageProps {
   pet: PetDTO;
   eggFillColor: string;
   eggBackgroundImageUrl: string;
-  dinoBackgroundImageUrl: string;
+  petBackgroundImageUrl: string;
 }
 
 const EVOLUTION_LABELS = ["EGGIE", "LEGGIE", "STEGGIE", "DRAGGIE"];
@@ -33,7 +33,7 @@ export default function HomePage({
   pet,
   eggFillColor,
   eggBackgroundImageUrl,
-  dinoBackgroundImageUrl,
+  petBackgroundImageUrl,
 }: HomePageProps) {
   const buttons: ButtonConfig[] = [
     {
@@ -60,12 +60,19 @@ export default function HomePage({
     `DINO ${pet.evolutionLevel + 1}`;
   const moodLabel = MOOD_LABELS[pet.mood] ?? pet.mood.toUpperCase();
 
+  const petImageUrl =
+    pet.kind === "hamster"
+      ? pet.health > 0
+        ? "views://mainview/assets/hamster/hamster.png"
+        : "views://mainview/assets/hamster/death.png"
+      : `views://mainview/assets/dino/dino-${pet.mood}/evolution${pet.evolutionImageIndex}.png`;
+
   return (
     <Layout
       buttons={buttons}
       eggFillColor={eggFillColor}
       eggBackgroundImageUrl={eggBackgroundImageUrl}
-      dinoBackgroundImageUrl={dinoBackgroundImageUrl}
+      petBackgroundImageUrl={petBackgroundImageUrl}
     >
       <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
         <div className="relative flex h-full w-full items-center justify-center px-3 py-2">
@@ -79,34 +86,38 @@ export default function HomePage({
               ))}
             </div>
 
-            <div className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-2 py-0.5 text-[8px] uppercase tracking-[0.12em] text-white/75">
-              <span
-                className={`h-2 w-2 rounded-full ${MOOD_DOT_CLASSNAMES[pet.mood]}`}
-              />
-              <span className="truncate">{moodLabel}</span>
-              <span>{pet.productivityScore}%</span>
-            </div>
+            {pet.kind === "hamster" ? null : (
+              <div className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-2 py-0.5 text-[8px] uppercase tracking-[0.12em] text-white/75">
+                <span
+                  className={`h-2 w-2 rounded-full ${MOOD_DOT_CLASSNAMES[pet.mood]}`}
+                />
+                <span className="truncate">{moodLabel}</span>
+                <span>{pet.productivityScore}%</span>
+              </div>
+            )}
 
             <img
-              src={`views://mainview/assets/dino/dino-${pet.mood}/evolution${pet.evolutionImageIndex}.png`}
+              src={petImageUrl}
               alt="pet"
               className="my-1.5 h-[108px] w-[108px] object-contain drop-shadow-[0_6px_10px_rgba(0,0,0,0.9)]"
               draggable={false}
             />
 
-            <div className="w-full max-w-[156px] rounded-lg border border-white/15 bg-black/55 px-2 py-1">
-              <div className="mt-1 h-1.5 rounded-full border border-white/10 bg-black/65">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-emerald-500 transition-[width]"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
+            {pet.kind === "hamster" ? null : (
+              <div className="w-full max-w-[156px] rounded-lg border border-white/15 bg-black/55 px-2 py-1">
+                <div className="mt-1 h-1.5 rounded-full border border-white/10 bg-black/65">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-emerald-500 transition-[width]"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
 
-              <div className="mt-1 text-center text-[8px] uppercase tracking-[0.12em] text-white/75 whitespace-nowrap">
-                {evolutionLabel} • {pet.xpIntoCurrentEvolution}/
-                {pet.xpForNextEvolution}XP
+                <div className="mt-1 text-center text-[8px] uppercase tracking-[0.12em] text-white/75 whitespace-nowrap">
+                  {evolutionLabel} • {pet.xpIntoCurrentEvolution}/
+                  {pet.xpForNextEvolution}XP
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

@@ -19,13 +19,11 @@ import type {
 import {
   getDefaultPetState,
   getPetProgress,
+  getHamsterProgress,
   penalizePetForMissedTask,
   rewardPetForCompletedTask,
 } from "../types/pet";
-import {
-  initNotifications,
-  rescheduleNotifications,
-} from "./notifications";
+import { initNotifications, rescheduleNotifications } from "./notifications";
 
 const APP_NAME = config.app.name;
 const DEV_SERVER_PORT = 5173;
@@ -54,6 +52,9 @@ function mapTodo(row: typeof todos.$inferSelect): TodoDTO {
     title: row.title,
     description: row.description ?? null,
     completed: !!row.completed,
+    completedAt: row.completedAt
+      ? new Date(row.completedAt).toISOString()
+      : null,
     createdAt: new Date(row.createdAt).toISOString(),
     dueAt: row.dueAt ? new Date(row.dueAt).toISOString() : null,
   };
@@ -61,9 +62,7 @@ function mapTodo(row: typeof todos.$inferSelect): TodoDTO {
 
 function isOverdueTodo(todo: typeof todos.$inferSelect, now: Date) {
   return (
-    !todo.completed &&
-    !!todo.dueAt &&
-    todo.dueAt.getTime() < now.getTime()
+    !todo.completed && !!todo.dueAt && todo.dueAt.getTime() < now.getTime()
   );
 }
 
@@ -80,17 +79,21 @@ function getProductivitySnapshot(
 
 function mapPet(
   row: typeof petState.$inferSelect,
-  todoRows: Array<typeof todos.$inferSelect> = [],
+  {
+    todoRows = [],
+    hardMode = false,
+  }: { todoRows?: Array<typeof todos.$inferSelect>; hardMode?: boolean } = {},
 ): PetDTO {
-  return getPetProgress({
-    health: row.health,
-    xp: row.xp,
-  }, getProductivitySnapshot(todoRows));
+  const pet = { health: row.health, xp: row.xp };
+  const productivity = getProductivitySnapshot(todoRows);
+  return hardMode
+    ? getHamsterProgress(pet, productivity)
+    : getPetProgress(pet, productivity);
 }
 
 const DEFAULT_EGG_COLOR = "#CAF0FE";
 const DEFAULT_EGG_BACKGROUND = "egg-triangles";
-const DEFAULT_DINO_BACKGROUND: AppBackgroundDTO = {
+const DEFAULT_PET_BACKGROUND: AppBackgroundDTO = {
   kind: "preset",
   value: "dino-landscape",
 };
@@ -99,14 +102,14 @@ function normalizeEggBackground(value: string | null | undefined) {
   return value?.trim() || DEFAULT_EGG_BACKGROUND;
 }
 
-function normalizeDinoBackground(
+function normalizePetBackground(
   background: AppBackgroundDTO,
 ): AppBackgroundDTO {
   const kind = background.kind === "custom" ? "custom" : "preset";
   const value = background.value?.trim();
 
   if (!value) {
-    return DEFAULT_DINO_BACKGROUND;
+    return DEFAULT_PET_BACKGROUND;
   }
 
   return { kind, value };
@@ -116,10 +119,11 @@ function mapAppSettings(row: typeof appSettings.$inferSelect): AppSettingsDTO {
   return {
     eggColor: row.eggColor || DEFAULT_EGG_COLOR,
     eggBackground: normalizeEggBackground(row.eggBackgroundValue),
-    dinoBackground: normalizeDinoBackground({
+    petBackground: normalizePetBackground({
       kind: row.dinoBackgroundKind === "custom" ? "custom" : "preset",
-      value: row.dinoBackgroundValue || DEFAULT_DINO_BACKGROUND.value,
+      value: row.dinoBackgroundValue || DEFAULT_PET_BACKGROUND.value,
     }),
+    hardMode: !!row.hardMode,
   };
 }
 
@@ -134,8 +138,9 @@ async function getOrCreateAppSettings() {
     .values({
       eggColor: DEFAULT_EGG_COLOR,
       eggBackgroundValue: DEFAULT_EGG_BACKGROUND,
-      dinoBackgroundKind: DEFAULT_DINO_BACKGROUND.kind,
-      dinoBackgroundValue: DEFAULT_DINO_BACKGROUND.value,
+      dinoBackgroundKind: DEFAULT_PET_BACKGROUND.kind,
+      dinoBackgroundValue: DEFAULT_PET_BACKGROUND.value,
+      hardMode: false,
     })
     .returning();
 
@@ -166,11 +171,14 @@ function hasMissedDueDate(
 ): todo is typeof todo & { dueAt: Date } {
   return (
     isOverdueTodo(todo, now) &&
+    !!todo.dueAt &&
     todo.penaltyAppliedForDueAt?.getTime() !== todo.dueAt.getTime()
   );
 }
 
 async function applyMissedTaskPenalties(now = new Date()) {
+  const settings = await getOrCreateAppSettings();
+  const hardMode = !!settings.hardMode;
   const currentPet = await getOrCreatePetState();
   const overdueTodos = (await db.select().from(todos)).filter((todo) =>
     hasMissedDueDate(todo, now),
@@ -183,10 +191,12 @@ async function applyMissedTaskPenalties(now = new Date()) {
   let nextPet = currentPet;
 
   for (const todo of overdueTodos) {
-    const penalizedPet = penalizePetForMissedTask({
-      health: nextPet.health,
-      xp: nextPet.xp,
-    });
+    const penalizedPet = hardMode
+      ? { health: 0, xp: nextPet.xp }
+      : penalizePetForMissedTask({
+          health: nextPet.health,
+          xp: nextPet.xp,
+        });
 
     [nextPet] = await db
       .update(petState)
@@ -247,6 +257,8 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
       },
       toggleTodo: async ({ id }) => {
         let nextPet = await applyMissedTaskPenalties();
+        const settings = await getOrCreateAppSettings();
+        const hardMode = !!settings.hardMode;
         const [existing] = await db
           .select()
           .from(todos)
@@ -261,7 +273,12 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
           .where(eq(todos.id, id))
           .returning();
 
-        if (!existing.completed && nextCompleted) {
+        if (
+          !existing.completed &&
+          nextCompleted &&
+          !hardMode &&
+          nextPet.health > 0
+        ) {
           const rewardedPet = rewardPetForCompletedTask({
             health: nextPet.health,
             xp: nextPet.xp,
@@ -281,7 +298,7 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
         const todoRows = await db.select().from(todos);
         return {
           todo: mapTodo(updated),
-          pet: mapPet(nextPet, todoRows),
+          pet: mapPet(nextPet, { todoRows, hardMode }),
         };
       },
       deleteTodo: async ({ id }) => {
@@ -291,8 +308,10 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
       },
       getPetState: async () => {
         const pet = await applyMissedTaskPenalties();
+        const settings = await getOrCreateAppSettings();
+        const hardMode = !!settings.hardMode;
         const todoRows = await db.select().from(todos);
-        return mapPet(pet, todoRows);
+        return mapPet(pet, { todoRows, hardMode });
       },
       getAppSettings: async () => {
         const settings = await getOrCreateAppSettings();
@@ -313,8 +332,8 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
           .values({
             eggColor: color,
             eggBackgroundValue: DEFAULT_EGG_BACKGROUND,
-            dinoBackgroundKind: DEFAULT_DINO_BACKGROUND.kind,
-            dinoBackgroundValue: DEFAULT_DINO_BACKGROUND.value,
+            dinoBackgroundKind: DEFAULT_PET_BACKGROUND.kind,
+            dinoBackgroundValue: DEFAULT_PET_BACKGROUND.value,
           })
           .returning();
         return { color: inserted.eggColor };
@@ -331,9 +350,9 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
 
         return { value: normalizeEggBackground(updated.eggBackgroundValue) };
       },
-      setDinoBackground: async (background) => {
+      setPetBackground: async (background) => {
         const existing = await getOrCreateAppSettings();
-        const nextBackground = normalizeDinoBackground(background);
+        const nextBackground = normalizePetBackground(background);
 
         const [updated] = await db
           .update(appSettings)
@@ -344,10 +363,19 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
           .where(eq(appSettings.id, existing.id))
           .returning();
 
-        return normalizeDinoBackground({
+        return normalizePetBackground({
           kind: updated.dinoBackgroundKind === "custom" ? "custom" : "preset",
           value: updated.dinoBackgroundValue,
         });
+      },
+      setHardMode: async ({ enabled }) => {
+        const existing = await getOrCreateAppSettings();
+        const [updated] = await db
+          .update(appSettings)
+          .set({ hardMode: !!enabled })
+          .where(eq(appSettings.id, existing.id))
+          .returning();
+        return { enabled: !!updated.hardMode };
       },
       closeApp: async () => {
         mainWindow.close();
@@ -367,7 +395,7 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
         return {
           success: true,
           appSettings: mapAppSettings(settings),
-          pet: mapPet(pet),
+          pet: mapPet(pet, { hardMode: !!settings.hardMode }),
         };
       },
     },

@@ -13,7 +13,7 @@ interface LayoutProps {
   buttons: ButtonConfig[];
   eggFillColor?: string;
   eggBackgroundImageUrl?: string;
-  dinoBackgroundImageUrl?: string;
+  petBackgroundImageUrl?: string;
 }
 
 export default function Layout({
@@ -21,7 +21,7 @@ export default function Layout({
   buttons,
   eggFillColor = "#CAF0FE",
   eggBackgroundImageUrl,
-  dinoBackgroundImageUrl,
+  petBackgroundImageUrl,
 }: LayoutProps) {
   const buttonShellClass =
     "rounded-[50%] bg-card border border-border/60 text-foreground/70 shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] hover:brightness-110 hover:bg-card focus-visible:ring-white/30 electrobun-webkit-app-region-no-drag";
@@ -77,9 +77,7 @@ export default function Layout({
 
       <div className="relative z-10 flex flex-col items-center justify-center h-full px-10 overflow-hidden mt-8">
         <div className="mb-2">
-          <Screen backgroundImageUrl={dinoBackgroundImageUrl}>
-            {children}
-          </Screen>
+          <Screen backgroundImageUrl={petBackgroundImageUrl}>{children}</Screen>
         </div>
         <div className="mt-1 flex flex-col items-center gap-3">
           <div className="flex items-end justify-center gap-3">

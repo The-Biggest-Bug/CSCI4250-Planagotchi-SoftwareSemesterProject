@@ -21,10 +21,12 @@ export interface AppBackgroundDTO {
 export interface AppSettingsDTO {
   eggColor: string;
   eggBackground: string;
-  dinoBackground: AppBackgroundDTO;
+  petBackground: AppBackgroundDTO;
+  hardMode: boolean;
 }
 
 export interface PetDTO {
+  kind: "dino" | "hamster";
   health: number;
   maxHealth: number;
   xp: number;
@@ -81,9 +83,13 @@ export type MainViewRPC = {
         params: { value: string };
         response: { value: string };
       };
-      setDinoBackground: {
+      setPetBackground: {
         params: AppBackgroundDTO;
         response: AppBackgroundDTO;
+      };
+      setHardMode: {
+        params: { enabled: boolean };
+        response: { enabled: boolean };
       };
       closeApp: {
         params: {};
