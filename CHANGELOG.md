@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.0](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.5.0...planagotchi-v1.6.0) (2026-04-21)
+
+
+### Features
+
+* add dinosaur death ([#26](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/issues/26)) ([4a4f38b](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/4a4f38bb4e2b01cb9219562966f6748fc6bcf846))
+* add hamster pet ([#28](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/issues/28)) ([33163c0](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/33163c04b0f25a1fcfa9b0acaa3ffe82d4c0d415))
+
 ## [1.5.0](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.4.0...planagotchi-v1.5.0) (2026-04-21)
 
 
