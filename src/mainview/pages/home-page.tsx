@@ -35,6 +35,8 @@ export default function HomePage({
   eggBackgroundImageUrl,
   dinoBackgroundImageUrl,
 }: HomePageProps) {
+  const isDead = pet.health <= 0;
+
   const buttons: ButtonConfig[] = [
     {
       icon: CalendarDaysIcon,
@@ -88,7 +90,11 @@ export default function HomePage({
             </div>
 
             <img
-              src={`views://mainview/assets/dino/dino-${pet.mood}/evolution${pet.evolutionImageIndex}.png`}
+              src={
+                isDead
+                  ? "views://mainview/assets/dino/death.png"
+                  : `views://mainview/assets/dino/dino-${pet.mood}/evolution${pet.evolutionImageIndex}.png`
+              }
               alt="pet"
               className="my-1.5 h-[108px] w-[108px] object-contain drop-shadow-[0_6px_10px_rgba(0,0,0,0.9)]"
               draggable={false}
