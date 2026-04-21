@@ -25,6 +25,21 @@ function isOverdue(todo: TodoDTO) {
   return new Date(todo.dueAt).getTime() < Date.now();
 }
 
+function pluralize(value: number, unit: string) {
+  return `${unit}${value === 1 ? "" : "s"}`;
+}
+
+function recurrenceUnitLabel(recurrenceType: "daily" | "weekly" | "monthly") {
+  switch (recurrenceType) {
+    case "daily":
+      return "day";
+    case "weekly":
+      return "week";
+    case "monthly":
+      return "month";
+  }
+}
+
 export default function TaskDetailModal({
   todo,
   onToggle,
@@ -36,19 +51,31 @@ export default function TaskDetailModal({
     <div className="absolute inset-0 z-20 bg-card flex flex-col p-2.5 gap-1.5">
       <div className="text-sm font-semibold truncate">{todo.title}</div>
 
-      <div className="flex items-center gap-2 rounded-md px-1 py-0.5">
+      <div className="flex items-start gap-2 rounded-md px-1 py-0.5">
         <Checkbox
           checked={todo.completed}
           onCheckedChange={() => onToggle(todo.id)}
-          className="h-3.5 w-3.5 shrink-0 cursor-pointer"
+          className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer"
         />
-        {todo.dueAt && (
-          <span
-            className={`text-xs ${overdue ? "text-rose-300" : "text-muted-foreground"}`}
-          >
-            {formatDue(todo.dueAt)}
-          </span>
-        )}
+        <div className="min-w-0">
+          {todo.dueAt ? (
+            <div
+              className={`text-xs ${overdue ? "text-rose-300" : "text-muted-foreground"}`}
+            >
+              {formatDue(todo.dueAt)}
+            </div>
+          ) : null}
+
+          {todo.recurrenceType ? (
+            <div className="text-xs text-muted-foreground">
+              repeats every{" "}
+              {pluralize(
+                todo.recurrenceInterval ?? 1,
+                recurrenceUnitLabel(todo.recurrenceType),
+              )}
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-1 min-h-0">

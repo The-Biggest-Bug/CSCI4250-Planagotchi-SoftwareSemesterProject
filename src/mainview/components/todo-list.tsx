@@ -107,6 +107,14 @@ export default function TodoList({
                   {formatDue(todo.dueAt)}
                 </span>
               )}
+              {todo.recurrenceType && (
+                <span
+                  className="text-xs shrink-0 text-muted-foreground"
+                  title={`Repeats every ${todo.recurrenceInterval ?? 1} ${todo.recurrenceType}(s)`}
+                >
+                  ↻
+                </span>
+              )}
             </div>
           );
         })}

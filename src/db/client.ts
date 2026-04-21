@@ -47,6 +47,18 @@ try {
   // column already exists
 }
 
+try {
+  sqlite.run(`ALTER TABLE todos ADD COLUMN recurrence_type TEXT`);
+} catch {
+  // column already exists
+}
+
+try {
+  sqlite.run(`ALTER TABLE todos ADD COLUMN recurrence_interval INTEGER`);
+} catch {
+  // column already exists
+}
+
 sqlite.run(`
   CREATE TABLE IF NOT EXISTS app_settings (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,

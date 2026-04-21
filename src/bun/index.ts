@@ -57,6 +57,8 @@ function mapTodo(row: typeof todos.$inferSelect): TodoDTO {
       : null,
     createdAt: new Date(row.createdAt).toISOString(),
     dueAt: row.dueAt ? new Date(row.dueAt).toISOString() : null,
+    recurrenceType: (row.recurrenceType as TodoDTO["recurrenceType"]) ?? null,
+    recurrenceInterval: row.recurrenceInterval ?? null,
   };
 }
 
@@ -218,6 +220,14 @@ async function applyMissedTaskPenalties(now = new Date()) {
   return nextPet;
 }
 
+function getNextDueDate(dueAt: Date, type: string, interval: number): Date {
+  const next = new Date(dueAt);
+  if (type === "daily") next.setDate(next.getDate() + interval);
+  if (type === "weekly") next.setDate(next.getDate() + interval * 7);
+  if (type === "monthly") next.setMonth(next.getMonth() + interval);
+  return next;
+}
+
 const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
   handlers: {
     requests: {
@@ -229,23 +239,42 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
           .orderBy(desc(todos.createdAt));
         return rows.map(mapTodo);
       },
-      addTodo: async ({ title, description, dueAt }) => {
+      addTodo: async ({
+        title,
+        description,
+        dueAt,
+        recurrenceType,
+        recurrenceInterval,
+      }) => {
         const [inserted] = await db
           .insert(todos)
           .values({
             title,
             description: description || null,
             dueAt: dueAt ? new Date(dueAt) : null,
+            recurrenceType: recurrenceType ?? null,
+            recurrenceInterval: recurrenceInterval ?? null,
           })
           .returning();
         await rescheduleNotifications();
         return mapTodo(inserted);
       },
-      updateTodo: async ({ id, title, description, dueAt }) => {
+      updateTodo: async ({
+        id,
+        title,
+        description,
+        dueAt,
+        recurrenceType,
+        recurrenceInterval,
+      }) => {
         const set: Partial<typeof todos.$inferInsert> = {};
         if (title !== undefined) set.title = title;
         if (description !== undefined) set.description = description || null;
         if (dueAt !== undefined) set.dueAt = dueAt ? new Date(dueAt) : null;
+        if (recurrenceType !== undefined)
+          set.recurrenceType = recurrenceType ?? null; // ADD
+        if (recurrenceInterval !== undefined)
+          set.recurrenceInterval = recurrenceInterval ?? null; // ADD
 
         const [updated] = await db
           .update(todos)
@@ -283,15 +312,40 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
             health: nextPet.health,
             xp: nextPet.xp,
           });
-
           [nextPet] = await db
             .update(petState)
-            .set({
-              health: rewardedPet.health,
-              xp: rewardedPet.xp,
-            })
+            .set({ health: rewardedPet.health, xp: rewardedPet.xp })
             .where(eq(petState.id, nextPet.id))
             .returning();
+        }
+
+        if (
+          !existing.completed &&
+          nextCompleted &&
+          updated.recurrenceType &&
+          updated.dueAt
+        ) {
+          const nextDue = getNextDueDate(
+            updated.dueAt,
+            updated.recurrenceType,
+            updated.recurrenceInterval ?? 1,
+          );
+          const [rescheduled] = await db
+            .update(todos)
+            .set({
+              completed: false,
+              completedAt: null,
+              dueAt: nextDue,
+              penaltyAppliedForDueAt: null,
+            })
+            .where(eq(todos.id, updated.id))
+            .returning();
+          await rescheduleNotifications();
+          const todoRows = await db.select().from(todos);
+          return {
+            todo: mapTodo(rescheduled),
+            pet: mapPet(nextPet, { todoRows, hardMode }),
+          };
         }
 
         await rescheduleNotifications();
