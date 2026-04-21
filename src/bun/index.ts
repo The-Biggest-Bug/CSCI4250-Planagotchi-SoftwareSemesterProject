@@ -59,11 +59,33 @@ function mapTodo(row: typeof todos.$inferSelect): TodoDTO {
   };
 }
 
-function mapPet(row: typeof petState.$inferSelect): PetDTO {
+function isOverdueTodo(todo: typeof todos.$inferSelect, now: Date) {
+  return (
+    !todo.completed &&
+    !!todo.dueAt &&
+    todo.dueAt.getTime() < now.getTime()
+  );
+}
+
+function getProductivitySnapshot(
+  todoRows: Array<typeof todos.$inferSelect>,
+  now = new Date(),
+) {
+  return {
+    totalTodos: todoRows.length,
+    completedTodos: todoRows.filter((todo) => todo.completed).length,
+    overdueTodos: todoRows.filter((todo) => isOverdueTodo(todo, now)).length,
+  };
+}
+
+function mapPet(
+  row: typeof petState.$inferSelect,
+  todoRows: Array<typeof todos.$inferSelect> = [],
+): PetDTO {
   return getPetProgress({
     health: row.health,
     xp: row.xp,
-  });
+  }, getProductivitySnapshot(todoRows));
 }
 
 const DEFAULT_EGG_COLOR = "#CAF0FE";
@@ -143,9 +165,7 @@ function hasMissedDueDate(
   now: Date,
 ): todo is typeof todo & { dueAt: Date } {
   return (
-    !todo.completed &&
-    !!todo.dueAt &&
-    todo.dueAt.getTime() < now.getTime() &&
+    isOverdueTodo(todo, now) &&
     todo.penaltyAppliedForDueAt?.getTime() !== todo.dueAt.getTime()
   );
 }
@@ -258,9 +278,10 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
         }
 
         await rescheduleNotifications();
+        const todoRows = await db.select().from(todos);
         return {
           todo: mapTodo(updated),
-          pet: mapPet(nextPet),
+          pet: mapPet(nextPet, todoRows),
         };
       },
       deleteTodo: async ({ id }) => {
@@ -270,7 +291,8 @@ const mainViewRPC = BrowserView.defineRPC<MainViewRPC>({
       },
       getPetState: async () => {
         const pet = await applyMissedTaskPenalties();
-        return mapPet(pet);
+        const todoRows = await db.select().from(todos);
+        return mapPet(pet, todoRows);
       },
       getAppSettings: async () => {
         const settings = await getOrCreateAppSettings();

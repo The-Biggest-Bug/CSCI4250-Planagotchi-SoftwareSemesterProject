@@ -30,10 +30,7 @@ export default function App() {
 
     const loadAppSettings = async () => {
       try {
-        const [settings, petState] = await Promise.all([
-          electroview.rpc!.request.getAppSettings({}),
-          electroview.rpc!.request.getPetState({}),
-        ]);
+        const settings = await electroview.rpc!.request.getAppSettings({});
         if (!cancelled) {
           if (settings?.eggColor) {
             setEggFillColor(settings.eggColor);
@@ -45,10 +42,6 @@ export default function App() {
 
           if (settings?.dinoBackground) {
             setDinoBackground(settings.dinoBackground);
-          }
-
-          if (petState) {
-            setPet(petState);
           }
         }
       } catch {
@@ -62,6 +55,31 @@ export default function App() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (page !== "home") {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadPetState = async () => {
+      try {
+        const petState = await electroview.rpc!.request.getPetState({});
+        if (!cancelled && petState) {
+          setPet(petState);
+        }
+      } catch {
+        // ignore refresh errors and keep the current local pet state
+      }
+    };
+
+    loadPetState();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [page]);
 
   const handleEggColorChange = async (color: string) => {
     setEggFillColor(color);

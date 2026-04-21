@@ -12,7 +12,8 @@
     "format:check": "prettier --check .",
     "start": "bun run dev",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "dino:resize": "bash ./scripts/resize-dino-pixel-art.sh"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
