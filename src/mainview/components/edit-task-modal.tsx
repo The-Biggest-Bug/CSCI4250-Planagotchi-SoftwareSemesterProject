@@ -2,6 +2,30 @@ import { useState } from "react";
 import { formatDateInputValue, formatTimeInputValue } from "@/lib/utils";
 import type { TodoDTO } from "@/shared/rpc";
 import { electroview } from "@/shared/electrobun";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/mainview/components/ui/select";
+
+type RecurrenceType = "daily" | "weekly" | "monthly" | "";
+
+function pluralize(value: number, unit: string) {
+  return `${unit}${value === 1 ? "" : "s"}`;
+}
+
+function recurrenceUnitLabel(recurrenceType: Exclude<RecurrenceType, "">) {
+  switch (recurrenceType) {
+    case "daily":
+      return "day";
+    case "weekly":
+      return "week";
+    case "monthly":
+      return "month";
+  }
+}
 
 interface EditTaskModalProps {
   todo: TodoDTO;
@@ -29,9 +53,9 @@ export default function EditTaskModal({
   const [description, setDescription] = useState(todo.description ?? "");
   const [date, setDate] = useState(parsed.date);
   const [time, setTime] = useState(parsed.time);
-  const [recurrenceType, setRecurrenceType] = useState<
-    "daily" | "weekly" | "monthly" | ""
-  >(todo.recurrenceType ?? "");
+  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>(
+    todo.recurrenceType ?? "",
+  );
   const [recurrenceInterval, setRecurrenceInterval] = useState(
     todo.recurrenceInterval ?? 1,
   );
@@ -80,74 +104,112 @@ export default function EditTaskModal({
         onSubmit={handleSave}
         className="flex flex-col gap-1.5 flex-1 min-h-0"
       >
-        <input
-          autoFocus
-          type="text"
-          placeholder="Task name"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="rounded-md bg-background/40 border border-border/60 px-2 py-1 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        />
-
-        <textarea
-          placeholder="Description (optional)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={2}
-          className="rounded-md bg-background/40 border border-border/60 px-2 py-1 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none flex-shrink"
-        />
-
-        <div className="flex gap-1.5">
+        <div className="flex flex-col gap-1.5 flex-1 min-h-0 overflow-y-auto pr-0.5">
           <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="flex-1 min-w-0 rounded-md bg-background/40 border border-border/60 px-1.5 py-1 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            autoFocus
+            type="text"
+            placeholder="Task name"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="rounded-md bg-background/40 border border-border/60 px-2 py-1 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
-          <input
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            className="flex-1 min-w-0 rounded-md bg-background/40 border border-border/60 px-1.5 py-1 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
+
+          <textarea
+            placeholder="Description (optional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            className="rounded-md bg-background/40 border border-border/60 px-2 py-1 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
           />
-        </div>
 
-        <div className="flex flex-col gap-1">
-          <select
-            value={recurrenceType}
-            onChange={(e) =>
-              setRecurrenceType(
-                e.target.value as "daily" | "weekly" | "monthly" | "",
-              )
-            }
-            className="rounded-md bg-background/40 border border-border/60 px-1.5 py-1 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            <option value="">Does not repeat</option>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-          </select>
+          <div className="flex gap-1.5">
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="flex-1 min-w-0 rounded-md bg-background/40 border border-border/60 px-1.5 py-1 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            />
+            <input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className="flex-1 min-w-0 rounded-md bg-background/40 border border-border/60 px-1.5 py-1 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            />
+          </div>
 
-          {recurrenceType && (
+          {recurrenceType ? (
             <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Every</span>
+              <Select
+                value={recurrenceType}
+                onValueChange={(value: string) => {
+                  if (value === "none") {
+                    setRecurrenceType("");
+                    setRecurrenceInterval(1);
+                    return;
+                  }
+
+                  setRecurrenceType(value as RecurrenceType);
+                }}
+              >
+                <SelectTrigger
+                  className="w-auto min-w-[76px] px-1.5"
+                  hideChevron
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Does not repeat</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <span className="text-xs text-muted-foreground">every</span>
               <input
                 type="number"
                 min={1}
+                max={9}
                 value={recurrenceInterval}
                 onChange={(e) =>
-                  setRecurrenceInterval(Math.max(1, Number(e.target.value)))
+                  setRecurrenceInterval(
+                    Math.min(9, Math.max(1, Number(e.target.value))),
+                  )
                 }
-                className="w-14 rounded-md bg-background/40 border border-border/60 px-1.5 py-1 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="w-8 rounded-md bg-background/40 border border-border/60 px-1 py-1 text-center text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
-              <span className="text-xs text-muted-foreground">
-                {recurrenceType}(s)
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                {pluralize(
+                  recurrenceInterval,
+                  recurrenceUnitLabel(recurrenceType),
+                )}
               </span>
             </div>
+          ) : (
+            <Select
+              value="none"
+              onValueChange={(value: string) => {
+                if (value === "none") {
+                  setRecurrenceType("");
+                  setRecurrenceInterval(1);
+                  return;
+                }
+
+                setRecurrenceType(value as RecurrenceType);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Does not repeat" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Does not repeat</SelectItem>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
           )}
         </div>
-
-        <div className="flex-1" />
 
         <div className="flex gap-2 justify-between">
           <button

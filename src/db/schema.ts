@@ -13,7 +13,7 @@ export const todos = sqliteTable("todos", {
   penaltyAppliedForDueAt: integer("penalty_applied_for_due_at", {
     mode: "timestamp_ms",
   }),
-  recurrenceType: text("recurrence_type"),    // 'daily' | 'weekly' | 'monthly' | null
+  recurrenceType: text("recurrence_type"), // 'daily' | 'weekly' | 'monthly' | null
   recurrenceInterval: integer("recurrence_interval"), // e.g. 1 = every 1 day/week/month
 });
 

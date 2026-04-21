@@ -54,7 +54,7 @@ export type MainViewRPC = {
           description?: string;
           dueAt?: string;
           recurrenceType?: "daily" | "weekly" | "monthly" | null;
-          recurrenceInterval?: number | null;                       
+          recurrenceInterval?: number | null;
         };
         response: TodoDTO;
       };
@@ -65,7 +65,7 @@ export type MainViewRPC = {
           description?: string | null;
           dueAt?: string | null;
           recurrenceType?: "daily" | "weekly" | "monthly" | null;
-          recurrenceInterval?: number | null;     
+          recurrenceInterval?: number | null;
         };
         response: TodoDTO | null;
       };
