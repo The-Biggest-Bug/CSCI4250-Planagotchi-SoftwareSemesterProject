@@ -4,6 +4,7 @@ export const todos = sqliteTable("todos", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   completed: integer("completed", { mode: "boolean" }).notNull().default(false),
+  completedAt: integer("completed_at", { mode: "timestamp_ms" }),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),

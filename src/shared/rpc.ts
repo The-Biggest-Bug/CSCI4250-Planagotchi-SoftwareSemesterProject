@@ -6,6 +6,7 @@ export interface TodoDTO {
   title: string;
   description: string | null;
   completed: boolean;
+  completedAt: string | null;
   createdAt: string;
   dueAt: string | null;
 }
@@ -33,6 +34,7 @@ export interface PetDTO {
   xpForNextEvolution: number;
   mood: PetMoodDTO;
   productivityScore: number;
+  streakDays: number;
 }
 
 export type MainViewRPC = {
