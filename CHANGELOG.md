@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.4.0...planagotchi-v1.5.0) (2026-04-21)
+
+
+### Features
+
+* add streak rewards ([#25](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/issues/25)) ([f1b9ff9](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/f1b9ff9877a8647e5defa6127de384d430ef99eb))
+* adding pet moods ([#23](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/issues/23)) ([d00e9c8](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/d00e9c8df7427a3694d28d36a1ca4cc493f51f33))
+
 ## [1.4.0](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.3.0...planagotchi-v1.4.0) (2026-04-13)
 
 
