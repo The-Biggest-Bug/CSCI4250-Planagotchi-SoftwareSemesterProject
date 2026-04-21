@@ -9,6 +9,8 @@ export interface TodoDTO {
   completedAt: string | null;
   createdAt: string;
   dueAt: string | null;
+  recurrenceType: "daily" | "weekly" | "monthly" | null;
+  recurrenceInterval: number | null;
 }
 
 export type AppBackgroundKind = "preset" | "custom";
@@ -47,7 +49,13 @@ export type MainViewRPC = {
         response: TodoDTO[];
       };
       addTodo: {
-        params: { title: string; description?: string; dueAt?: string };
+        params: {
+          title: string;
+          description?: string;
+          dueAt?: string;
+          recurrenceType?: "daily" | "weekly" | "monthly" | null;
+          recurrenceInterval?: number | null;                       
+        };
         response: TodoDTO;
       };
       updateTodo: {
@@ -56,6 +64,8 @@ export type MainViewRPC = {
           title?: string;
           description?: string | null;
           dueAt?: string | null;
+          recurrenceType?: "daily" | "weekly" | "monthly" | null;
+          recurrenceInterval?: number | null;     
         };
         response: TodoDTO | null;
       };
