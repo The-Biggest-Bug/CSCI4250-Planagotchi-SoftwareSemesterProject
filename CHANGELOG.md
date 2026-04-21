@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.7.0](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.6.0...planagotchi-v1.7.0) (2026-04-21)
+
+
+### Features
+
+* add daily habit tracking ([979d7a9](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/979d7a97cd9aa23fc8935f7c8c9abcf11511da49))
+* add recurring tasks backend ([c66cc95](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/c66cc953f0abf7c695fa1846493f9fe019ebb743))
+* add recurring tasks frontend ([3179904](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/3179904687a1187c96606834ded491446a0a94bb))
+* update daily task ui ([0b9a0f1](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/0b9a0f1570a612cc179072d64678c58d805da547))
+
 ## [1.6.0](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.5.0...planagotchi-v1.6.0) (2026-04-21)
 
 ### Features
