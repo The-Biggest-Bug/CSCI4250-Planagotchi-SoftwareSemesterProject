@@ -29,6 +29,12 @@ export default function EditTaskModal({
   const [description, setDescription] = useState(todo.description ?? "");
   const [date, setDate] = useState(parsed.date);
   const [time, setTime] = useState(parsed.time);
+  const [recurrenceType, setRecurrenceType] = useState<
+    "daily" | "weekly" | "monthly" | ""
+  >(todo.recurrenceType ?? "");
+  const [recurrenceInterval, setRecurrenceInterval] = useState(
+    todo.recurrenceInterval ?? 1,
+  );
   const [submitting, setSubmitting] = useState(false);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -47,6 +53,8 @@ export default function EditTaskModal({
         title: trimmed,
         description: description.trim() || null,
         dueAt,
+        recurrenceType: recurrenceType || null,
+        recurrenceInterval: recurrenceType ? recurrenceInterval : null,
       });
       if (updated) onUpdated(updated);
     } finally {
@@ -102,6 +110,41 @@ export default function EditTaskModal({
             onChange={(e) => setTime(e.target.value)}
             className="flex-1 min-w-0 rounded-md bg-background/40 border border-border/60 px-1.5 py-1 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <select
+            value={recurrenceType}
+            onChange={(e) =>
+              setRecurrenceType(
+                e.target.value as "daily" | "weekly" | "monthly" | "",
+              )
+            }
+            className="rounded-md bg-background/40 border border-border/60 px-1.5 py-1 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="">Does not repeat</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+
+          {recurrenceType && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground">Every</span>
+              <input
+                type="number"
+                min={1}
+                value={recurrenceInterval}
+                onChange={(e) =>
+                  setRecurrenceInterval(Math.max(1, Number(e.target.value)))
+                }
+                className="w-14 rounded-md bg-background/40 border border-border/60 px-1.5 py-1 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+              <span className="text-xs text-muted-foreground">
+                {recurrenceType}(s)
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex-1" />
