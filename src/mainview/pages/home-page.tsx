@@ -65,7 +65,9 @@ export default function HomePage({
       ? pet.health > 0
         ? "views://mainview/assets/hamster/hamster.png"
         : "views://mainview/assets/hamster/death.png"
-      : `views://mainview/assets/dino/dino-${pet.mood}/evolution${pet.evolutionImageIndex}.png`;
+      : pet.health > 0
+        ? `views://mainview/assets/dino/dino-${pet.mood}/evolution${pet.evolutionImageIndex}.png`
+        : "views://mainview/assets/dino/death.png";
 
   return (
     <Layout
