@@ -221,4 +221,3 @@ this section is the “deployment guide” for submission purposes.
 ### additional helpful information
 
 - formatting - `bun run format`
-- resize dino pixel art assets - `bun run dino:resize`
