@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.7.0...planagotchi-v1.7.1) (2026-04-23)
+
+
+### Bug Fixes
+
+* fix dinosaur deaths not being displayed on home page ([#32](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/issues/32)) ([9aa7d7a](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/9aa7d7a0ddb29afcab3d7ba71937954115153b8f))
+
 ## [1.7.0](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.6.0...planagotchi-v1.7.0) (2026-04-21)
 
 
