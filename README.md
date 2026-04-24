@@ -172,8 +172,7 @@ the authoritative schema is in `src/db/schema.ts`. at a high level:
 
 #### project management tool
 
-- GitHub Projects (if enabled) or Issues + Milestones in the repo
-  - `https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject`
+- Trello - `https://trello.com/b/4cTIRmKY`
 
 #### build and deployment (procedure)
 
