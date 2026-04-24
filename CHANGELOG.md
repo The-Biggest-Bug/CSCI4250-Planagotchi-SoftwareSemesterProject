@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.2](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.7.1...planagotchi-v1.7.2) (2026-04-24)
+
+
+### Bug Fixes
+
+* remove dino resize docs ([#35](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/issues/35)) ([4a1d6d7](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/commit/4a1d6d75428acf0a68c22aa744adb72ad5c1cc0d))
+
 ## [1.7.1](https://github.com/The-Biggest-Bug/CSCI4250-Planagotchi-SoftwareSemesterProject/compare/planagotchi-v1.7.0...planagotchi-v1.7.1) (2026-04-23)
 
 
